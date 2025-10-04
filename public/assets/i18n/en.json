@@ -24,77 +24,34 @@
   "FEES": "Fees",
   "NET": "Net",
   "HOME": {
-    "MENU": "Menu",
-    "OPTIONS": "Options",
-    "SAVED_SNAPSHOTS": "Saved snapshots",
     "CLOSE": "Close",
-    "SAVED_AT": "Saved at",
-    "DATE_LABEL": "Date",
-    "NAME": "Name",
-    "ROWS": "Rows",
-    "DELIVERED_COL": "Delivered",
-    "TOTAL_AR": "Total (Ar)",
-    "LOAD": "Load",
-    "RENAME": "Rename",
+    "CANCEL": "Cancel",
+    "SAVE": "Save",
     "DELETE": "Delete",
-    "NO_SNAPSHOTS": "No snapshots yet.",
-    "ROW_ADD": "+ Row",
-    "CHECK_ALL_PACKED": "Check all (Packed)",
-    "REMOVE_ALL_LINES": "Remove all lines",
-    "MORE": "More",
-    "SAVE_SNAPSHOT": "Save snapshot",
-    "UPDATE_SNAPSHOT": "Update snapshot",
-    "REMOVE": "Remove",
-
-    "NEW": "New",
-    "HISTORY": "History",
-    "EXPORT_ALL": "Export all",
-    "IMPORT": "Import",
-    "CLEAR": "Clear",
-
-    "TH": {
-      "NO": "No.",
-      "PACKED": "Packed",
-      "TYPE": "Type",
+    "CLEAR_ALL": "Reset app",
+    "CONFIRM_CLEAR": "Delete all saved items and reset the app?",
+    "TODAY": "Today",
+    "PHOTOS": {
+      "TITLE": "Client-assigned products (photos)",
+      "ADD": "Add",
+      "ADD_TITLE": "Add photos",
+      "CLIENT": "Client name",
       "LOCATION": "Location",
-      "PAID": "Paid",
-      "CUSTOMER": "Customer",
-      "AMOUNT": "Amount",
-      "COAST": "Fees",
-      "DELIVERED": "Delivered",
-      "COURIER": "Courier",
-      "ACTIONS": "Actions"
-    },
-
-    "SUMMARY_TITLE": "Summary",
-    "NO_DELIVERED": "No delivered rows yet.",
-
-    "PLACEHOLDER": {
-      "TYPE": "e.g. TANA / PROVINCE",
-      "LOCATION": "e.g. Andraharo",
-      "CUSTOMER": "e.g. John Doe / +261…",
-      "AMOUNT": "30 000+60 000"
-    },
-
-    "ALERT": {
-      "SHEET_IMPORTED": "Sheet imported.",
-      "ALL_DATA_IMPORTED": "All data imported.",
-      "ALL_DATA_CLEARED": "All local data cleared.",
-      "SNAPSHOT_SAVED": "Saved new snapshot: \"{{name}}\"",
-      "SNAPSHOT_UPDATED": "Updated snapshot: \"{{name}}\"",
-      "SEE_RESULT": "Delivered parcels: {{count}}\nTotal delivered amount: {{total}} Ar",
-      "FAILED_IMPORT": "Failed to import file. {{message}}"
-    },
-    "CONFIRM": {
-      "IMPORT_ALL": "Importing all data will replace autosaves and snapshots for this app. Continue?",
-      "REMOVE_ROW": "Remove this row?",
-      "CLEAR_ALL": "Clear all saved data (autosave, snapshots, session)?",
-      "DELETE_SNAPSHOT": "Delete this snapshot ?",
-      "REMOVE_ALL_LINES": "Remove all lines?",
-      "NEW_SHEET": "Create new sheet for today? Unsaved changes will be lost."
-    },
-    "PROMPT": {
-      "RENAME_SNAPSHOT": "Rename snapshot:"
+      "NOTE": "Description / note",
+      "IMAGES_INPUT": "Images (multiple)",
+      "IMAGES": "images",
+      "VALIDATION_REQUIRED": "Client is required.",
+      "NO_FILES": "Please select at least one image.",
+      "SAVED": "Saved.",
+      "CONFIRM_DELETE": "Delete this item?",
+      "EXPORT": "Export",
+      "IMPORT": "Import",
+      "IMPORTED": "Import completed.",
+      "IMPORT_FAILED": "Import failed: {{message}}",
+      "EMPTY": "No items yet.",
+      "DATE": "Date",
+      "FILTER_BY_DATE": "Filter by date",
+      "CLEAR_FILTER": "Clear filter"
     }
   },
   "GUIDE": {

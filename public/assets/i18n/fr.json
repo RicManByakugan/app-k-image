@@ -24,77 +24,34 @@
   "FEES": "Frais",
   "NET": "Net",
   "HOME": {
-    "MENU": "Menu",
-    "OPTIONS": "Options",
-    "SAVED_SNAPSHOTS": "Captures enregistrées",
     "CLOSE": "Fermer",
-    "SAVED_AT": "Enregistré le",
-    "DATE_LABEL": "Date",
-    "NAME": "Nom",
-    "ROWS": "Lignes",
-    "DELIVERED_COL": "Livré",
-    "TOTAL_AR": "Total (Ar)",
-    "LOAD": "Charger",
-    "RENAME": "Renommer",
+    "CANCEL": "Annuler",
+    "SAVE": "Enregistrer",
     "DELETE": "Supprimer",
-    "NO_SNAPSHOTS": "Aucune capture pour le moment.",
-    "ROW_ADD": "+ Ligne",
-    "CHECK_ALL_PACKED": "Tout cocher (Emballé)",
-    "REMOVE_ALL_LINES": "Supprimer toutes les lignes",
-    "MORE": "Plus",
-    "SAVE_SNAPSHOT": "Enregistrer la capture",
-    "UPDATE_SNAPSHOT": "Mettre à jour la capture",
-    "REMOVE": "Retirer",
-
-    "NEW": "Nouveau",
-    "HISTORY": "Historique",
-    "EXPORT_ALL": "Exporter tout",
-    "IMPORT": "Importer",
-    "CLEAR": "Tout effacer",
-
-    "TH": {
-      "NO": "N°",
-      "PACKED": "Emballé",
-      "TYPE": "Type",
+    "CLEAR_ALL": "Réinitialiser l’app",
+    "CONFIRM_CLEAR": "Supprimer toutes les données et réinitialiser l’application ?",
+    "TODAY": "Aujourd’hui",
+    "PHOTOS": {
+      "TITLE": "Produits destinés (photos par client)",
+      "ADD": "Ajouter",
+      "ADD_TITLE": "Ajouter des photos",
+      "CLIENT": "Nom du client",
       "LOCATION": "Lieu",
-      "PAID": "Payé",
-      "CUSTOMER": "Client",
-      "AMOUNT": "Montant",
-      "COAST": "Frais",
-      "DELIVERED": "Livré",
-      "COURIER": "Livreur",
-      "ACTIONS": "Actions"
-    },
-
-    "SUMMARY_TITLE": "Résumé",
-    "NO_DELIVERED": "Aucune livraison effectuée.",
-
-    "PLACEHOLDER": {
-      "TYPE": "ex. TANA / PROVINCE",
-      "LOCATION": "ex. Andraharo",
-      "CUSTOMER": "ex. Jean Dupont / +261…",
-      "AMOUNT": "30 000+60 000"
-    },
-
-    "ALERT": {
-      "SHEET_IMPORTED": "Feuille importée.",
-      "ALL_DATA_IMPORTED": "Toutes les données ont été importées.",
-      "ALL_DATA_CLEARED": "Toutes les données locales ont été effacées.",
-      "SNAPSHOT_SAVED": "Nouvelle capture enregistrée : « {{name}} »",
-      "SNAPSHOT_UPDATED": "Capture mise à jour : « {{name}} »",
-      "SEE_RESULT": "Colis livrés : {{count}}\nMontant total livré : {{total}} Ar",
-      "FAILED_IMPORT": "Échec de l’importation du fichier. {{message}}"
-    },
-    "CONFIRM": {
-      "IMPORT_ALL": "Importer toutes les données remplacera les sauvegardes automatiques et les captures de cette application. Continuer ?",
-      "REMOVE_ROW": "Supprimer cette ligne ?",
-      "CLEAR_ALL": "Effacer toutes les données enregistrées (autosauvegardes, captures, session) ?",
-      "DELETE_SNAPSHOT": "Supprimer cette capture ?",
-      "REMOVE_ALL_LINES": "Supprimer toutes les lignes ?",
-      "NEW_SHEET": "Créer une nouvelle feuille pour aujourd’hui ? Les modifications non enregistrées seront perdues."
-    },
-    "PROMPT": {
-      "RENAME_SNAPSHOT": "Renommer la capture :"
+      "NOTE": "Description / note",
+      "IMAGES_INPUT": "Images (plusieurs)",
+      "IMAGES": "images",
+      "VALIDATION_REQUIRED": "Le client est requis.",
+      "NO_FILES": "Sélectionnez au moins une image.",
+      "SAVED": "Enregistré.",
+      "CONFIRM_DELETE": "Supprimer cet élément ?",
+      "EXPORT": "Exporter",
+      "IMPORT": "Importer",
+      "IMPORTED": "Import terminé.",
+      "IMPORT_FAILED": "Échec de l’import : {{message}}",
+      "EMPTY": "Aucun élément pour le moment.",
+      "DATE": "Date",
+      "FILTER_BY_DATE": "Filtrer par date",
+      "CLEAR_FILTER": "Effacer le filtre"
     }
   },
   "GUIDE": {
