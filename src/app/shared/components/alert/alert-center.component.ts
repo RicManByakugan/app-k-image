@@ -17,7 +17,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
   template: `
     <!-- Toast stack (top-right) -->
     <div
-      class="fixed top-4 right-4 z-[1000] flex flex-col gap-3 w-[92vw] max-w-sm"
+      class="fixed top-4 right-4 z-[99999] flex flex-col gap-3 w-[92vw] max-w-sm"
     >
       <div
         *ngFor="let t of toasts()"
@@ -52,7 +52,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
     <!-- Modal dialog -->
     <div
       *ngIf="dialog().open"
-      class="fixed inset-0 z-[1100] flex items-center justify-center"
+      class="fixed inset-0 z-[99999] flex items-center justify-center"
     >
       <div
         class="absolute inset-0 bg-slate-800/40 dark:bg-black/60"

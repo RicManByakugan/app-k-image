@@ -26,17 +26,17 @@
   "HOME": {
     "OR": "ou",
     "BROWSE": "Parcourir…",
-    "TODAY": "aujourd'hui",
+    "TODAY": "aujourd’hui",
     "CLOSE": "Fermer",
     "CANCEL": "Annuler",
     "SAVE": "Enregistrer",
     "DELETE": "Supprimer",
-    "CLEAR_ALL": "Réinitialiser",
-    "CONFIRM_CLEAR": "Êtes-vous sûr de vouloir supprimer toutes les données enregistrées sur cet appareil ?",
+    "CLEAR_ALL": "Réinitialiser l’application",
+    "CONFIRM_CLEAR": "Voulez-vous vraiment supprimer toutes les données enregistrées sur cet appareil ?",
     "PHOTOS": {
       "TOTAL": "total",
       "DND_HINT": "Glissez-déposez vos images ici",
-      "TITLE": "Photos du client",
+      "TITLE": "Photos client",
       "DATE": "Date",
       "ADD": "Ajouter",
       "ADD_TITLE": "Ajouter des photos pour un client",
@@ -49,13 +49,13 @@
       "NOTE": "Note",
       "IMAGES": "images",
       "IMAGES_INPUT": "Images",
-      "EMPTY": "Aucun élément pour l’instant. Ajoutez vos premières photos client.",
-      "VALIDATION_REQUIRED": "Le nom du client est obligatoire.",
+      "EMPTY": "Aucun élément pour le moment. Ajoutez vos premières photos client.",
+      "VALIDATION_REQUIRED": "Le nom du client est requis.",
       "NO_FILES": "Veuillez sélectionner au moins une image.",
       "SAVED": "Enregistré avec succès.",
       "CONFIRM_DELETE": "Supprimer cet élément ?",
       "IMPORTED": "Données importées avec succès.",
-      "IMPORT_FAILED": "Échec de l'importation : {{message}}",
+      "IMPORT_FAILED": "Échec de l’import",
       "DRAG_DROP_MSG": "Glissez-déposez vos images ici",
       "OR": "ou",
       "BROWSE": "Parcourir…"
@@ -66,9 +66,50 @@
       "THREE_COLS": "3 colonnes"
     },
     "LOADING": {
-      "ADDING": "Ajout…",
-      "IMPORTING": "Importation…",
-      "EXPORTING": "Exportation…"
+      "ADDING": "Ajout en cours…",
+      "IMPORTING": "Import en cours…",
+      "EXPORTING": "Export en cours…",
+      "SAVING": "Enregistrement…",
+      "RESTORING": "Restauration…",
+      "CLEARING": "Nettoyage…"
+    },
+    "BACKUP": {
+      "TITLE": "Sauvegarde & Stockage",
+      "DIR_LABEL": "Dossier de sauvegarde",
+      "CHOOSE_DIR": "Choisir un dossier",
+      "CURRENT_DIR": "Dossier actuel",
+      "OPEN_FOLDER": "Ouvrir le dossier",
+      "DISCONNECT": "Déconnecter le dossier",
+      "DISCONNECTED": "Dossier déconnecté.",
+      "NOT_SUPPORTED": "Votre navigateur ne permet pas de sélectionner un dossier local. Essayez Chrome/Edge ou un navigateur à jour.",
+      "NEEDS_HTTPS": "Cette fonctionnalité nécessite un contexte sécurisé (HTTPS ou localhost).",
+      "SAVE": "Sauvegarder dans le dossier",
+      "SAVE_OK": "Sauvegarde terminée.",
+      "SAVE_ERR": "Échec de la sauvegarde",
+      "LOAD": "Charger depuis le dossier",
+      "LOAD_OK": "Données restaurées depuis la sauvegarde.",
+      "LOAD_ERR": "Échec du chargement",
+      "CLEAR_DB": "Vider la base locale",
+      "CONFIRM_CLEAR_DB": "Supprimer toutes les données de la base locale ? Cette action est irréversible.",
+      "CLEAR_DB_OK": "Base locale vidée.",
+      "CHOOSE": "Choisir",
+      "CLEARED": "Base locale vidée.",
+      "SET_OK": "Dossier de sauvegarde défini.",
+      "SAVE_DONE": "Enregistrement terminé.",
+      "NO_FOLDER": "Aucun dossier sélectionné.",
+      "CLEAR_FAILED": "Échec du nettoyage",
+      "REQUIRED": "Veuillez d’abord choisir un dossier de sauvegarde."
+    },
+    "DB": {
+      "SAVE_TO_DB": "Enregistrer dans la base",
+      "SAVE_OK": "Enregistré dans la base.",
+      "SAVE_ERR": "Échec de l’enregistrement dans la base",
+      "CLEAR_DB": "Vider la base",
+      "CLEAR_DB_OK": "Base vidée."
+    },
+    "ERRORS": {
+      "PERMISSION_DENIED": "Permission refusée.",
+      "UNKNOWN": "Erreur inattendue."
     }
   },
 

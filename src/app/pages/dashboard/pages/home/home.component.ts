@@ -15,6 +15,7 @@ import { HeaderComponent } from '../../../../shared/layout/main/header/header.co
 import { FooterComponent } from '../../../../shared/layout/main/footer/footer.component';
 import { AlertService } from '../../../../core/services/alert.service';
 import { customer, location } from '../../../../core/const/suggestion';
+import { FsBackupService } from '../../../../core/services/fs-backup.service';
 
 type ImageEntry = {
   id: string;
@@ -55,8 +56,11 @@ type Draft = {
 export class HomeComponent {
   private t = inject(TranslateService);
   private alerts = inject(AlertService);
+  fs = inject(FsBackupService); // public pour le template
 
-  actionLoading: boolean = false;
+  actionLoading: boolean = false; // loader du bouton "SAVE" (modal ajout)
+  savingDb: boolean = false; // loader du bouton "Save" (DB)
+  clearingDb: boolean = false; // loader du bouton "Clear" (DB)
 
   gridCols: number = this.readGridCols();
 
@@ -72,6 +76,10 @@ export class HomeComponent {
   selectedDateFilter = signal<string | null>(null); // 'yyyy-MM-dd' ou null
   private hideSuggestTimer?: number;
 
+  // Emplacement backup (nom du dossier, si choisi)
+  backupFolderName: string | null = null;
+  backupReady = signal<boolean>(false);
+
   suggestions = {
     customers: customer,
     locations: location,
@@ -84,13 +92,44 @@ export class HomeComponent {
   importInput?: ElementRef<HTMLInputElement>;
 
   constructor() {
+    void this.ensureBackup().then((ok) => {
+      this.items.set(ok ? this.readAll() : []); // si pas de base -> rien à afficher
+    });
+
     this.items.set(this.readAll());
     effect(() => this.writeAll(this.items()));
+    // Récupération du handle dossier s'il existe déjà
+    void this.fs.getHandle().then((h) => {
+      this.backupFolderName = h ? (h as any).name ?? '…' : null;
+      if (h) localStorage.setItem('backup-configured', '1');
+    });
   }
 
   // ====== I18n helper ======
   private i18n(key: string, params?: Record<string, any>) {
     return this.t.instant(key, params);
+  }
+
+  get isGallery(): boolean {
+    return this.gridCols >= 5;
+  }
+
+  private readGridCols(): number {
+    try {
+      const raw = localStorage.getItem('client-photos-grid-cols');
+      const n = raw ? parseInt(raw, 10) : 2;
+      // <— autoriser 1,2,3,5,6
+      return [1, 2, 3, 5, 6].includes(n) ? n : 2;
+    } catch {
+      return 2;
+    }
+  }
+
+  setGridCols(n: number) {
+    // <— autoriser 1,2,3,5,6
+    if (![1, 2, 3, 5, 6].includes(n)) return;
+    this.gridCols = n;
+    localStorage.setItem('client-photos-grid-cols', String(n));
   }
 
   // ====== Date utils ======
@@ -110,12 +149,10 @@ export class HomeComponent {
       arr.push(it);
       map.set(key, arr);
     }
-    // trier chaque groupe par createdAt desc
     for (const [k, arr] of map.entries()) {
       arr.sort((a, b) => b.createdAt - a.createdAt);
       map.set(k, arr);
     }
-    // trier les dates desc
     const sortedKeys = Array.from(map.keys()).sort((a, b) =>
       b.localeCompare(a)
     );
@@ -129,7 +166,7 @@ export class HomeComponent {
     return this.groups().filter((g) => g.date === f);
   });
 
-  // ====== Storage ======
+  // ====== Storage (local) ======
   private readAll(): PhotoItem[] {
     try {
       const raw = localStorage.getItem(this.STORAGE_KEY);
@@ -140,7 +177,83 @@ export class HomeComponent {
     }
   }
   private writeAll(items: PhotoItem[]) {
+    if (!items || items.length === 0) {
+      localStorage.removeItem(this.STORAGE_KEY);
+      return;
+    }
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(items));
+  }
+
+  private async ensureBackup(): Promise<boolean> {
+    if (!this.fs.isSupported) {
+      this.backupReady.set(false);
+      this.backupFolderName = null;
+      localStorage.removeItem('backup-configured');
+      return false;
+    }
+
+    const handle = await this.fs.getHandle();
+    if (!handle) {
+      this.backupReady.set(false);
+      this.backupFolderName = null;
+      localStorage.removeItem('backup-configured');
+      return false;
+    }
+
+    try {
+      // 1) S’assure d’avoir la permission RW
+      const permFn = (handle as any).requestPermission?.bind(handle);
+      if (permFn) {
+        const p = await permFn({ mode: 'readwrite' });
+        if (p !== 'granted') throw new Error('Permission denied');
+      }
+
+      // 2) PROBE: itère une entrée (si le dossier n’existe plus => NotFoundError)
+      const entries = (handle as any).entries?.();
+      if (entries && typeof entries[Symbol.asyncIterator] === 'function') {
+        for await (const _ of entries) break; // on “pique” une entrée et stop
+      } else {
+        // Fallback minimal : pas d’API entries() (selon impl), on continue
+      }
+
+      // OK : base prête
+      this.backupFolderName = (handle as any).name ?? '…';
+      this.backupReady.set(true);
+      localStorage.setItem('backup-configured', '1');
+      return true;
+    } catch {
+      // Le dossier a été supprimé / inaccessible
+      this.backupReady.set(false);
+      this.backupFolderName = null;
+      localStorage.removeItem('backup-configured');
+
+      // On purge l’affichage pour éviter toute illusion de base existante
+      this.items.set([]);
+      return false;
+    }
+  }
+
+  // ====== List actions ======
+  async removeItem(id: string) {
+    const ok = await this.alerts.confirm(
+      this.t.instant('HOME.PHOTOS.CONFIRM_DELETE')
+    );
+    if (!ok) return;
+
+    // retire l’élément de la liste locale
+    this.items.update((arr) => arr.filter((x) => x.id !== id));
+
+    // nettoie l’index de cover si présent
+    delete this.coverIndex[id];
+
+    // si on avait le viewer ouvert sur cet item, on peut le fermer (optionnel)
+    if (
+      this.viewerOpen &&
+      this.viewerImages.length &&
+      this.items().every((x) => x.id !== id)
+    ) {
+      this.closeViewer();
+    }
   }
 
   // ====== Modal / Form ======
@@ -166,7 +279,25 @@ export class HomeComponent {
     return URL.createObjectURL(file);
   }
 
-  // SUBMIT (pas de loader)
+  // Choisir le dossier de backup
+  async chooseBackupFolder() {
+    if (!this.fs.isSupported) {
+      await this.alerts.alert(this.t.instant('HOME.BACKUP.NOT_SUPPORTED'));
+      return;
+    }
+    const handle = await this.fs.pickFolder();
+    if (!handle) return;
+
+    this.backupFolderName = (handle as any).name ?? '…';
+    localStorage.setItem('backup-configured', '1');
+    await this.ensureBackup(); // revalide et active backupReady
+
+    await this.alerts.alert(
+      this.t.instant('HOME.BACKUP.SET_OK', { name: this.backupFolderName })
+    );
+  }
+
+  // SUBMIT (modal) — sauvegarde locale + dossier (si configuré)
   async submit() {
     const d = this.draft();
 
@@ -181,58 +312,163 @@ export class HomeComponent {
       return;
     }
 
-    this.actionLoading = true; // ⬅️ démarre le loader
+    const okBase = await this.ensureBackup();
+    if (!okBase) {
+      await this.alerts.alert(this.t.instant('HOME.BACKUP.REQUIRED')); // "Veuillez sélectionner une base avant d'ajouter des données."
+      await this.chooseBackupFolder();
+      return;
+    }
+
+    this.actionLoading = true;
     try {
-      const images: ImageEntry[] = [];
+      const imagesForApp: ImageEntry[] = [];
+      const blobsById: Record<string, Blob> = {};
+
       for (const f of d.files) {
-        const dataUrl = await this.resizeToDataURL(f, 1280, 0.8);
-        images.push({
-          id: crypto.randomUUID(),
-          dataUrl,
+        const thumbDataUrl = await this.resizeToDataURL(f, 320, 0.7);
+        const bigBlob = await this.resizeToBlob(f, 1280, 0.8);
+
+        const id = crypto.randomUUID();
+        imagesForApp.push({
+          id,
+          dataUrl: thumbDataUrl,
           mime: 'image/jpeg',
-          name: f.name || 'image',
+          name: f.name || 'image.jpg',
         });
+        blobsById[id] = bigBlob;
       }
 
       const now = Date.now();
-      const item: PhotoItem = {
+      const itemForApp: PhotoItem = {
         id: crypto.randomUUID(),
         client: d.client.trim(),
         location: d.location.trim(),
         note: d.note?.trim() ?? '',
         createdAt: now,
-        images,
+        images: imagesForApp,
       };
 
-      this.items.update((arr) => [item, ...arr]);
+      // Local
+      this.items.update((arr) => [itemForApp, ...arr]);
       this.isAddOpen.set(false);
+
+      // Dossier (si configuré)
+      try {
+        await this.fs.writeItemTree(
+          {
+            id: itemForApp.id,
+            client: itemForApp.client,
+            location: itemForApp.location,
+            note: itemForApp.note,
+            createdAt: itemForApp.createdAt,
+            images: imagesForApp.map((im) => ({
+              id: im.id,
+              name: im.name,
+              mime: im.mime,
+            })),
+          },
+          blobsById
+        );
+      } catch (e) {
+        console.warn('Backup write failed:', e);
+      }
+
       await this.alerts.alert(this.t.instant('HOME.PHOTOS.SAVED'));
     } finally {
       this.actionLoading = false;
     }
   }
-  private readGridCols(): number {
+
+  // ====== SAVE ALL to DB (dossier) ======
+  async saveAllToDb() {
+    if (!this.fs.isSupported) {
+      await this.alerts.alert(this.t.instant('HOME.BACKUP.NOT_SUPPORTED'));
+      return;
+    }
+    let handle = await this.fs.getHandle();
+    if (!handle) {
+      await this.chooseBackupFolder();
+      handle = await this.fs.getHandle();
+      if (!handle) return;
+    }
+
+    this.savingDb = true;
     try {
-      const raw = localStorage.getItem('client-photos-grid-cols');
-      const n = raw ? parseInt(raw, 10) : 2;
-      return [1, 2, 3].includes(n) ? n : 2;
-    } catch {
-      return 2;
+      const list = this.items();
+      for (const it of list) {
+        const blobs: Record<string, Blob> = {};
+        for (const im of it.images) {
+          // on convertit la miniature (dataURL) en blob
+          blobs[im.id] = await this.dataUrlToBlob(im.dataUrl);
+        }
+        await this.fs.writeItemTree(
+          {
+            id: it.id,
+            client: it.client,
+            location: it.location,
+            note: it.note,
+            createdAt: it.createdAt,
+            images: it.images.map((im) => ({
+              id: im.id,
+              name: im.name,
+              mime: im.mime,
+            })),
+          },
+          blobs
+        );
+      }
+      await this.alerts.alert(this.t.instant('HOME.BACKUP.SAVE_DONE'));
+    } catch (e: any) {
+      await this.alerts.alert(
+        this.t.instant('HOME.BACKUP.SAVE_FAILED', {
+          message: e?.message || '',
+        })
+      );
+    } finally {
+      this.savingDb = false;
     }
   }
 
-  setGridCols(n: number) {
-    if (![1, 2, 3].includes(n)) return;
-    this.gridCols = n;
-    localStorage.setItem('client-photos-grid-cols', String(n));
-  }
-  // ====== List actions ======
-  async removeItem(id: string) {
+  async clearAll() {
     const ok = await this.alerts.confirm(
-      this.i18n('HOME.PHOTOS.CONFIRM_DELETE')
+      this.t.instant('HOME.BACKUP.CONFIRM_CLEAR_DB')
     );
     if (!ok) return;
-    this.items.update((arr) => arr.filter((x) => x.id !== id));
+
+    this.clearingDb = true;
+    try {
+      // On vérifie d’abord que la base est là
+      const okBase = await this.ensureBackup();
+      if (!okBase) {
+        await this.alerts.alert(this.t.instant('HOME.BACKUP.MISSING'));
+        return;
+      }
+
+      await this.fs.clearFolder(); // vide contenu, ne supprime PAS le dossier
+      // On nettoie uniquement les données de l’app (pas la connexion)
+      localStorage.removeItem(this.STORAGE_KEY);
+      localStorage.removeItem('client-photos-grid-cols');
+
+      // Reset UI
+      this.items.set([]);
+      this.selectedDateFilter.set(null);
+      this.coverIndex = {};
+      this.viewerOpen = false;
+      this.viewerImages = [];
+      this.viewerIndex = 0;
+      this.viewerTitle = '';
+      this.resetDraft();
+
+      await this.alerts.alert(this.t.instant('HOME.BACKUP.CLEARED'));
+    } catch (e: any) {
+      await this.alerts.alert(
+        this.t.instant('HOME.BACKUP.CLEAR_FAILED', {
+          message: e?.message || '',
+        })
+      );
+    } finally {
+      this.clearingDb = false;
+    }
   }
 
   // ====== Date filter actions ======
@@ -248,7 +484,7 @@ export class HomeComponent {
     this.selectedDateFilter.set(val?.trim() ? val : null);
   }
 
-  // ====== Export / Import / Clear ======
+  // ====== Export / Import JSON (local) ======
   exportAll() {
     const payload = {
       kind: 'client-photos.v1',
@@ -297,14 +533,6 @@ export class HomeComponent {
     }
   }
 
-  async clearAll() {
-    const ok = await this.alerts.confirm(this.i18n('HOME.CONFIRM_CLEAR'));
-    if (!ok) return;
-    localStorage.removeItem(this.STORAGE_KEY);
-    this.items.set([]);
-    this.selectedDateFilter.set(null);
-  }
-
   // ====== Utils ======
   private resetDraft() {
     this.draft.set({ client: '', location: '', note: '', files: [] });
@@ -319,6 +547,7 @@ export class HomeComponent {
         img.onload = () => resolve(img);
         img.onerror = () => reject(new Error('image decode error'));
         img.src = fr.result as string;
+        img.decoding = 'async';
       };
       fr.readAsDataURL(file);
     });
@@ -341,6 +570,26 @@ export class HomeComponent {
     const ctx = canvas.getContext('2d')!;
     ctx.drawImage(img, 0, 0, w, h);
     return canvas.toDataURL('image/jpeg', quality);
+  }
+  private async resizeToBlob(
+    file: File,
+    maxDim: number,
+    quality: number
+  ): Promise<Blob> {
+    const img = await this.loadImage(file);
+    const { w, h } = this.fit(img.width, img.height, maxDim);
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d')!;
+    ctx.drawImage(img, 0, 0, w, h);
+    return await new Promise<Blob>((resolve) => {
+      canvas.toBlob((b) => resolve(b!), 'image/jpeg', quality);
+    });
+  }
+  private async dataUrlToBlob(dataUrl: string): Promise<Blob> {
+    const res = await fetch(dataUrl);
+    return await res.blob();
   }
 
   // ---- DnD ----
@@ -426,10 +675,8 @@ export class HomeComponent {
     this.openSuggest.set({ field: null });
   }
 
-  /** Index de cover par item.id */
+  // Viewer
   coverIndex: Record<string, number> = {};
-
-  /** Viewer plein écran */
   viewerOpen: boolean = false;
   viewerImages: ImageEntry[] = [];
   viewerIndex: number = 0;
@@ -450,12 +697,6 @@ export class HomeComponent {
     const idx = this.getCoverIndex(it);
     return it.images?.[idx] ?? it.images?.[0] ?? null;
   }
-  setCover(it: PhotoItem, idx: number) {
-    if (!it.images || idx < 0 || idx >= it.images.length) return;
-    this.coverIndex[it.id] = idx;
-  }
-
-  /** Viewer */
   openViewer(it: PhotoItem, idx: number = 0) {
     if (!it.images?.length) return;
     this.viewerImages = it.images;
