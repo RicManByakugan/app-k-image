@@ -1,0 +1,45 @@
+/* Animations */
+.slide-in {
+    animation: slideIn 180ms cubic-bezier(.2, .8, .2, 1);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-12px);
+        opacity: .98;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.menu-fade {
+    animation: menuFade 120ms ease-out;
+}
+
+@keyframes menuFade {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Quand le menu est ouvert, on évite le scroll de fond (appliqué au body) */
+body.menu-open {
+    overflow: hidden;
+}
+
+/* Masquer/neutraliser le main derrière (sans casser le layout) */
+.app-main-hidden {
+    pointer-events: none;
+    user-select: none;
+    /* optionnel: léger blur pour montrer l'état */
+    /* filter: blur(1px); */
+}

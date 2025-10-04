@@ -1,0 +1,184 @@
+{
+  "ALERT": {
+    "CANCEL": "Annuler",
+    "OK": "OK",
+    "SAVE": "Enregistrer",
+    "PLEASE_CONFIRM": "Veuillez confirmer",
+    "INPUT_REQUIRED": "Saisie requise",
+    "NOTICE": "Information"
+  },
+  "NAV": {
+    "HOME": "Accueil",
+    "GUIDE": "Guide",
+    "SUPPORT": "Support",
+    "LANGUAGE": "Langue",
+    "THEME": "Thème",
+    "LIGHT": "Clair",
+    "DARK": "Sombre",
+    "SYSTEM": "Système"
+  },
+  "FOOTER": {
+    "DEV": "Développeur"
+  },
+  "GROSS": "Brut",
+  "FEES": "Frais",
+  "NET": "Net",
+  "HOME": {
+    "MENU": "Menu",
+    "OPTIONS": "Options",
+    "SAVED_SNAPSHOTS": "Captures enregistrées",
+    "CLOSE": "Fermer",
+    "SAVED_AT": "Enregistré le",
+    "DATE_LABEL": "Date",
+    "NAME": "Nom",
+    "ROWS": "Lignes",
+    "DELIVERED_COL": "Livré",
+    "TOTAL_AR": "Total (Ar)",
+    "LOAD": "Charger",
+    "RENAME": "Renommer",
+    "DELETE": "Supprimer",
+    "NO_SNAPSHOTS": "Aucune capture pour le moment.",
+    "ROW_ADD": "+ Ligne",
+    "CHECK_ALL_PACKED": "Tout cocher (Emballé)",
+    "REMOVE_ALL_LINES": "Supprimer toutes les lignes",
+    "MORE": "Plus",
+    "SAVE_SNAPSHOT": "Enregistrer la capture",
+    "UPDATE_SNAPSHOT": "Mettre à jour la capture",
+    "REMOVE": "Retirer",
+
+    "NEW": "Nouveau",
+    "HISTORY": "Historique",
+    "EXPORT_ALL": "Exporter tout",
+    "IMPORT": "Importer",
+    "CLEAR": "Tout effacer",
+
+    "TH": {
+      "NO": "N°",
+      "PACKED": "Emballé",
+      "TYPE": "Type",
+      "LOCATION": "Lieu",
+      "PAID": "Payé",
+      "CUSTOMER": "Client",
+      "AMOUNT": "Montant",
+      "COAST": "Frais",
+      "DELIVERED": "Livré",
+      "COURIER": "Livreur",
+      "ACTIONS": "Actions"
+    },
+
+    "SUMMARY_TITLE": "Résumé",
+    "NO_DELIVERED": "Aucune livraison effectuée.",
+
+    "PLACEHOLDER": {
+      "TYPE": "ex. TANA / PROVINCE",
+      "LOCATION": "ex. Andraharo",
+      "CUSTOMER": "ex. Jean Dupont / +261…",
+      "AMOUNT": "30 000+60 000"
+    },
+
+    "ALERT": {
+      "SHEET_IMPORTED": "Feuille importée.",
+      "ALL_DATA_IMPORTED": "Toutes les données ont été importées.",
+      "ALL_DATA_CLEARED": "Toutes les données locales ont été effacées.",
+      "SNAPSHOT_SAVED": "Nouvelle capture enregistrée : « {{name}} »",
+      "SNAPSHOT_UPDATED": "Capture mise à jour : « {{name}} »",
+      "SEE_RESULT": "Colis livrés : {{count}}\nMontant total livré : {{total}} Ar",
+      "FAILED_IMPORT": "Échec de l’importation du fichier. {{message}}"
+    },
+    "CONFIRM": {
+      "IMPORT_ALL": "Importer toutes les données remplacera les sauvegardes automatiques et les captures de cette application. Continuer ?",
+      "REMOVE_ROW": "Supprimer cette ligne ?",
+      "CLEAR_ALL": "Effacer toutes les données enregistrées (autosauvegardes, captures, session) ?",
+      "DELETE_SNAPSHOT": "Supprimer cette capture ?",
+      "REMOVE_ALL_LINES": "Supprimer toutes les lignes ?",
+      "NEW_SHEET": "Créer une nouvelle feuille pour aujourd’hui ? Les modifications non enregistrées seront perdues."
+    },
+    "PROMPT": {
+      "RENAME_SNAPSHOT": "Renommer la capture :"
+    }
+  },
+  "GUIDE": {
+    "HERO": {
+      "TITLE": "STRIDE - Guide Utilisateur",
+      "SUB": "Gérez les colis par jour : saisissez les lignes, marquez emballé/payé/livré, assignez les coursiers, enregistrez des captures et exportez/importez les données. Ce guide explique chaque option de l’application.",
+      "CHIP_AUTOSAVE": "Sauvegarde locale automatique",
+      "CHIP_SNAP": "Captures",
+      "CHIP_JSON": "Export/import JSON"
+    },
+    "SIDEBAR": {
+      "CONTENTS": "Sommaire",
+      "ABOUT": "À propos de l’application",
+      "TOPBAR": "Barre supérieure",
+      "SHEET": "Feuille du jour",
+      "ACTIONS": "Actions sur la feuille",
+      "SNAPSHOTS": "Captures",
+      "FILES": "Exporter / Importer",
+      "SUMMARY": "Résumé par coursier",
+      "FAQ": "FAQ rapide"
+    },
+    "SECTION": {
+      "ABOUT": {
+        "TITLE": "À propos de l’application",
+        "BODY": "STRIDE vous permet d’enregistrer les colis d’une journée par date, de marquer leur statut (emballé, payé, livré), d’assigner un coursier et de suivre les montants. Les données sont sauvegardées automatiquement par date dans votre navigateur (localStorage) avec une copie de travail dans sessionStorage. Vous pouvez également exporter en JSON et importer plus tard."
+      },
+      "TOPBAR": {
+        "TITLE": "Barre supérieure",
+        "DATE": "Date — choisit le jour de travail. Chaque date a sa propre feuille.",
+        "NEW": "Nouveau — crée une feuille vierge pour aujourd’hui (réinitialise le tableau).",
+        "HISTORY": "Historique — ouvre le panneau des captures enregistrées.",
+        "OPTIONS": "Options ▾",
+        "EXPORT_ALL": "Tout exporter — télécharger un JSON avec toutes les sauvegardes automatiques et les captures.",
+        "IMPORT": "Importer… — charger un JSON précédemment exporté (feuille unique ou toutes les données).",
+        "CLEAR": "Vider le stockage — supprime toutes les données locales (autosauvegardes, captures, session)."
+      },
+      "SHEET": {
+        "TITLE": "Feuille du jour",
+        "NO": "N° — numéro de ligne (modifiable).",
+        "PACKED": "Emballé — case à cocher.",
+        "TYPE": "Type — texte libre (ex. TANA / PROVINCE).",
+        "LOCATION": "Lieu — texte libre (ex. Andraharo).",
+        "PAID": "Payé — case à cocher.",
+        "CUSTOMER": "Client — nom/téléphone.",
+        "AMOUNT": "Montant — ex. « 30 000 » ou « 30k ». Les caractères non numériques sont ignorés ; « k » = mille.",
+        "DELIVERED": "Livré — case à cocher.",
+        "COURIER": "Coursier — sélection (DERA, HERY, ALPHA, NJAKA, MAMY).",
+        "DELETE": "× — supprimer la ligne.",
+        "AUTOSAVE_CARD_TITLE": "Sauvegarde automatique",
+        "AUTOSAVE_CARD_BODY": "L’application sauvegarde automatiquement peu après chaque modification (~250 ms de délai).",
+        "AMOUNT_CARD_TITLE": "Format du montant",
+        "AMOUNT_CARD_BODY": "« 45k » → « 45 000 » ; « 30 000 » → « 30000 »."
+      },
+      "ACTIONS": {
+        "TITLE": "Actions sur la feuille",
+        "ROW": "+ Ligne — ajouter une ligne vide.",
+        "CHECK": "Tout cocher (Emballé) — marque « Emballé » sur chaque ligne.",
+        "REMOVE": "Supprimer toutes les lignes — efface toutes les lignes de la feuille.",
+        "SNAP": "Enregistrer / Mettre à jour la capture — enregistre une copie figée de la feuille (avec nom + horodatage) ou écrase la capture liée."
+      },
+      "SNAPSHOTS": {
+        "TITLE": "Captures",
+        "BODY": "Les captures sont des sauvegardes manuelles avec un nom et un horodatage. Vous pouvez Charger, Renommer ou Supprimer. Le tableau affiche aussi le nombre livré et le total livré calculé à partir de la capture."
+      },
+      "FILES": {
+        "TITLE": "Exporter / Importer",
+        "EXPORT": "Tout exporter — JSON avec chaque autosauvegarde et chaque capture.",
+        "IMPORT": "Importer… — accepte un JSON « feuille » (remplace uniquement la feuille courante) ou un JSON « toutes-données » (remplace autosauvegardes + captures après confirmation).",
+        "LOCAL": "Tout est stocké localement dans le navigateur — rien n’est envoyé au serveur."
+      },
+      "SUMMARY": {
+        "TITLE": "Résumé par coursier",
+        "BODY": "Totaux pour les lignes marquées « Livré », regroupés par coursier. Utile pour la clôture de fin de journée."
+      },
+      "FAQ": {
+        "TITLE": "FAQ rapide",
+        "Q1": "Où mes données sont-elles stockées ?",
+        "A1": "Dans votre navigateur : localStorage (par date + captures) et sessionStorage (copie de travail).",
+        "Q2": "Puis-je enregistrer un fichier ?",
+        "A2": "Oui — via Options → Tout exporter. Réimportez plus tard avec Options → Importer….",
+        "Q3": "Comment réinitialiser ?",
+        "A3": "Utilisez Options → Vider le stockage (tout effacer) ou Nouveau (nouvelle feuille pour aujourd’hui uniquement).",
+        "BACK_TOP": "Retour en haut"
+      }
+    }
+  }
+}

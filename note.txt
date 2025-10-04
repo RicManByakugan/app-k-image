@@ -1,0 +1,11 @@
+nvm use 20.17.0
+
+npm i -g @angular/cli@18.2.12
+
+npm i -D tailwindcss@3.4.13 postcss@^8 autoprefixer
+
+npx tailwindcss init -p
+
+------------------
+
+ ng g c app/pages/layout/app-layout --standalone --skip-tests --inline-style

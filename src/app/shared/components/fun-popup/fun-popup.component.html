@@ -1,0 +1,5 @@
+<div class="popup-wrapper" *ngIf="show" [@popupAnim]>
+  <div class="popup" (click)="close()">
+    <span class="popup-message">{{ message }}</span>
+  </div>
+</div>

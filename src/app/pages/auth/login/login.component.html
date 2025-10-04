@@ -1,0 +1,178 @@
+<app-header> </app-header>
+
+<main class="flex-1">
+  <section
+    class="min-h-[calc(100vh-4rem)] grid grid-cols-1 lg:grid-cols-12 items-stretch gap-8 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10"
+  >
+    <div
+      class="hidden lg:block lg:col-span-6 relative rounded-2xl overflow-hidden border border-gray-200/70 dark:border-gray-800"
+    >
+      <img
+        src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=1800&auto=format&fit=crop"
+        alt="Study and e-learning"
+        class="absolute inset-0 h-full w-full object-cover opacity-50"
+      />
+      <div
+        class="absolute inset-0 bg-gradient-to-tr from-indigo-800/70 via-fuchsia-600/50 to-emerald-500/40 mix-blend-multiply"
+      ></div>
+
+      <div
+        class="relative z-10 h-full p-10 flex flex-col justify-between text-white"
+      >
+        <div>
+          <a href="index.html" class="inline-flex items-center gap-2">
+            <span
+              class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/90 text-gray-900"
+            >
+              <i class="fa-solid fa-graduation-cap"></i>
+            </span>
+            <span class="text-lg font-semibold tracking-tight">AppLearn</span>
+          </a>
+          <h2 class="mt-6 text-3xl font-semibold leading-tight">
+            Apprends, progresse et réussis en ligne
+          </h2>
+          <p class="mt-2 text-white/90 max-w-xl">
+            Suis des cours interactifs, entraîne-toi avec des quiz et échange
+            avec tes professeurs et camarades en toute simplicité.
+          </p>
+        </div>
+
+        <ul class="space-y-3 text-sm">
+          <li class="gap-2">
+            <i class="fa-solid fa-book-open"></i> Cours interactifs & exercices
+          </li>
+          <li class="gap-2">
+            <i class="fa-solid fa-users"></i> Collaboration entre étudiants et
+            professeurs
+          </li>
+          <li class="gap-2">
+            <i class="fa-solid fa-shield-halved"></i> Accès sécurisé à votre
+            espace
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="lg:col-span-6 flex items-center">
+      <div class="w-full max-w-md mx-auto">
+        <div
+          class="rounded-2xl border border-gray-200/70 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm p-6 sm:p-8"
+        >
+          <a href="#" class="lg:hidden inline-flex items-center gap-2 mb-4">
+            <span
+              class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white"
+            >
+              <i class="fa-solid fa-graduation-cap"></i>
+            </span>
+            <span class="text-lg font-semibold tracking-tight">AppLearn</span>
+          </a>
+
+          <h1 class="text-2xl font-semibold">Bienvenue</h1>
+          <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            Connecte-toi pour continuer.
+          </p>
+
+          <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <button
+              class="h-11 inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 w-full"
+            >
+              <i class="fa-brands fa-google"></i> Google
+            </button>
+            <button
+              class="h-11 inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 w-full"
+            >
+              <i class="fa-brands fa-apple"></i> Apple
+            </button>
+          </div>
+
+          <div class="my-6 flex items-center gap-3">
+            <div class="h-px flex-1 bg-gray-200 dark:bg-gray-800"></div>
+            <span class="text-xs text-gray-500">ou avec email</span>
+            <div class="h-px flex-1 bg-gray-200 dark:bg-gray-800"></div>
+          </div>
+
+          <form action="#" method="post" class="space-y-4" novalidate>
+            <div>
+              <label for="email" class="block text-sm font-medium mb-1"
+                >Email</label
+              >
+              <div class="relative">
+                <i
+                  class="fa-regular fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                ></i>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autocomplete="email"
+                  required
+                  class="w-full h-11 pl-10 pr-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-transparent focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                  placeholder="vous@domaine.com"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label for="password" class="block text-sm font-medium mb-1"
+                >Mot de passe</label
+              >
+              <div class="relative">
+                <i
+                  class="fa-solid fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                ></i>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autocomplete="current-password"
+                  required
+                  class="w-full h-11 pl-10 pr-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-transparent focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                  placeholder="••••••••"
+                />
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between text-sm">
+              <label class="inline-flex items-center gap-2 select-none">
+                <input
+                  type="checkbox"
+                  name="remember"
+                  class="accent-indigo-600"
+                />
+                Se souvenir de moi
+              </label>
+              <a href="#" class="text-indigo-600 hover:text-indigo-500"
+                >Mot de passe oublié ?</a
+              >
+            </div>
+
+            <button
+              type="button"
+              onclick="window.location.href='index.html'"
+              class="w-full h-11 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-500"
+            >
+              Se connecter
+            </button>
+          </form>
+
+          <p class="mt-6 text-sm text-gray-600 dark:text-gray-400">
+            Pas encore de compte ?
+            <a
+              href="#"
+              class="font-medium text-indigo-600 hover:text-indigo-500"
+              >Créer un compte</a
+            >
+          </p>
+
+          <p class="mt-3 text-[11px] text-gray-500">
+            En continuant, vous acceptez nos
+            <a href="#" class="underline">Conditions</a> et notre
+            <a href="#" class="underline">Politique de confidentialité</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<app-footer> </app-footer>

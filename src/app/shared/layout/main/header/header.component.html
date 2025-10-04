@@ -1,0 +1,304 @@
+<!-- AFTER: put the whole header stacking context above everything -->
+<header
+  class="sticky top-0 z-[10000] h-16 border-b border-gray-200/70 dark:border-gray-800 bg-white/70 dark:bg-gray-900/60 shadow-[0_2px_12px_rgba(0,0,0,0.04)]"
+>
+  <div
+    class="mx-auto max-w-7xl h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between"
+  >
+    <!-- Brand -->
+    <a
+      [routerLink]="['/']"
+      class="flex items-center gap-2 group"
+      aria-label="STRIDE Home"
+    >
+      <span
+        class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-600 shadow-sm ring-1 ring-brand-700/20 transition-transform group-hover:scale-105"
+      >
+        <i class="fa-solid fa-box"></i>
+      </span>
+      <div class="flex flex-col leading-tight">
+        <span class="font-semibold tracking-tight text-[17px]">STRIDE</span>
+        <span class="text-[11px] text-gray-500 dark:text-gray-400">2025</span>
+      </div>
+    </a>
+
+    <!-- Right side: Lang + menu mobile -->
+    <div class="flex items-center gap-2 md:gap-4">
+      <!-- Desktop nav -->
+      <nav class="hidden md:flex items-center gap-6">
+        <a
+          [routerLink]="['/guide']"
+          class="text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-brand-600 hover:underline underline-offset-4"
+        >
+          {{ "NAV.GUIDE" | translate }}
+        </a>
+        <a
+          href="https://ratovonirina.onrender.com/"
+          target="_blank"
+          class="text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-brand-600 hover:underline underline-offset-4"
+        >
+          {{ "NAV.SUPPORT" | translate }}
+        </a>
+      </nav>
+
+      <!-- Theme toggle -->
+      <div class="relative">
+        <button
+          type="button"
+          (click)="toggleTheme()"
+          class="h-9 w-9 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 flex items-center justify-center shadow-sm hover:shadow transition"
+          [attr.aria-label]="'Toggle theme (current: ' + mode() + ')'"
+          [attr.aria-pressed]="isDark()"
+          title="Theme: {{ mode() | uppercase }}"
+        >
+          <!-- Icon changes with state -->
+          <i class="fa-solid" [ngClass]="isDark() ? 'fa-moon' : 'fa-sun'"></i>
+        </button>
+      </div>
+
+      <!-- Lang dropdown -->
+      <div class="relative">
+        <button
+          #langButton
+          type="button"
+          (click)="toggleLang()"
+          class="h-9 px-2 rounded-xl border bg-white border-gray-300 text-sm dark:bg-gray-900 dark:border-gray-700 flex items-center gap-2 shadow-sm hover:shadow transition"
+          aria-haspopup="menu"
+          [attr.aria-expanded]="isLangOpen"
+        >
+          <img
+            [src]="flags[currentLang()]"
+            alt=""
+            class="h-4 w-6 rounded-sm ring-1 ring-black/5"
+          />
+          <span class="hidden sm:inline font-medium uppercase">{{
+            currentLang()
+          }}</span>
+          <i class="fa-solid fa-chevron-down text-xs opacity-60"></i>
+        </button>
+
+        <div
+          #langMenu
+          *ngIf="isLangOpen"
+          class="absolute right-0 mt-2 w-36 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-lg menu-fade"
+          role="menu"
+        >
+          <button
+            class="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 rounded-t-xl"
+            (click)="changeLang('en')"
+            role="menuitem"
+          >
+            <img
+              [src]="flags.en"
+              alt=""
+              class="h-4 w-6 rounded-sm ring-1 ring-black/5"
+            />
+            <span class="font-medium">English</span>
+          </button>
+          <button
+            class="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 rounded-b-xl"
+            (click)="changeLang('fr')"
+            role="menuitem"
+          >
+            <img
+              [src]="flags.fr"
+              alt=""
+              class="h-4 w-6 rounded-sm ring-1 ring-black/5"
+            />
+            <span class="font-medium">Français</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Hamburger -->
+      <button
+        #menuButton
+        type="button"
+        class="md:hidden inline-flex items-center justify-center h-9 w-9 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm hover:shadow transition"
+        (click)="toggleMenu()"
+        [attr.aria-expanded]="isMenuOpen"
+        aria-controls="mobileMenu"
+        aria-label="Open menu"
+      >
+        <i class="fa-solid" [ngClass]="isMenuOpen ? 'fa-xmark' : 'fa-bars'"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Overlay -->
+  <div
+    *ngIf="isMenuOpen"
+    class="fixed inset-0 z-[210] bg-black/50 backdrop-blur-[1px] md:hidden"
+    (click)="closeMenu()"
+    aria-hidden="true"
+  ></div>
+
+  <!-- Slide menu left -->
+  <aside
+    *ngIf="isMenuOpen"
+    id="mobileMenu"
+    class="fixed inset-y-0 left-0 z-[220] w-80 max-w-[85%] md:hidden"
+    role="dialog"
+    aria-modal="true"
+    (click)="$event.stopPropagation()"
+  >
+    <div
+      #menuPanel
+      class="h-[100vh] bg-white dark:bg-gray-900 shadow-2xl slide-in p-4 flex flex-col"
+    >
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <span
+            class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 "
+          >
+            <i class="fa-solid fa-box"></i>
+          </span>
+          <span class="font-semibold tracking-tight">STRIDE</span>
+        </div>
+        <button
+          type="button"
+          class="h-9 w-9 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+          (click)="closeMenu()"
+          aria-label="Close menu"
+        >
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <nav class="flex-1 space-y-1">
+        <a
+          [routerLink]="['']"
+          class="block px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800"
+        >
+          {{ "NAV.HOME" | translate }}
+        </a>
+        <a
+          [routerLink]="['/guide']"
+          class="block px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800"
+        >
+          {{ "NAV.GUIDE" | translate }}
+        </a>
+        <a
+          href="https://ratovonirina.onrender.com/"
+          target="_blank"
+          class="block px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800"
+        >
+          {{ "NAV.SUPPORT" | translate }}
+        </a>
+      </nav>
+
+      <!-- Footer controls -->
+      <div>
+        <!-- THEME section (on top of language) -->
+        <div class="mb-3">
+          <div
+            class="px-1 pb-2 text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400"
+          >
+            {{ "NAV.THEME" | translate }}
+          </div>
+
+          <div class="grid grid-cols-3 gap-2">
+            <button
+              class="px-3 py-2 rounded-lg border text-sm hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center justify-center gap-2"
+              [ngClass]="
+                mode() === 'light'
+                  ? 'border-brand-600'
+                  : 'border-gray-300 dark:border-gray-700'
+              "
+              (click)="setTheme('light')"
+              [attr.aria-pressed]="mode() === 'light'"
+            >
+              <i class="fa-solid fa-sun"></i>
+              <span class="hidden sm:inline">{{
+                "NAV.LIGHT" | translate
+              }}</span>
+            </button>
+
+            <button
+              class="px-3 py-2 rounded-lg border text-sm hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center justify-center gap-2"
+              [ngClass]="
+                mode() === 'dark'
+                  ? 'border-brand-600'
+                  : 'border-gray-300 dark:border-gray-700'
+              "
+              (click)="setTheme('dark')"
+              [attr.aria-pressed]="mode() === 'dark'"
+            >
+              <i class="fa-solid fa-moon"></i>
+              <span class="hidden sm:inline">{{ "NAV.DARK" | translate }}</span>
+            </button>
+
+            <button
+              class="px-3 py-2 rounded-lg border text-sm hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center justify-center gap-2"
+              [ngClass]="
+                mode() === 'system'
+                  ? 'border-brand-600'
+                  : 'border-gray-300 dark:border-gray-700'
+              "
+              (click)="setTheme('system')"
+              [attr.aria-pressed]="mode() === 'system'"
+            >
+              <i class="fa-solid fa-display"></i>
+              <span class="hidden sm:inline">{{
+                "NAV.SYSTEM" | translate
+              }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Divider BEFORE language -->
+        <div class="my-3 border-t border-gray-200 dark:border-gray-800"></div>
+
+        <!-- LANGUAGE section -->
+        <div>
+          <div
+            class="px-1 pb-2 text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400"
+          >
+            {{ "NAV.LANGUAGE" | translate }}
+          </div>
+
+          <div class="flex items-center gap-3 w-full">
+            <button
+              class="w-full justify-center flex items-center gap-2 px-3 py-2 rounded-lg border text-sm hover:bg-gray-50 dark:hover:bg-gray-800"
+              [ngClass]="
+                currentLang() === 'en'
+                  ? 'border-brand-600'
+                  : 'border-gray-300 dark:border-gray-700'
+              "
+              (click)="changeLang('en')"
+            >
+              <img
+                [src]="flags.en"
+                alt=""
+                class="h-4 w-6 rounded-sm ring-1 ring-black/5"
+              />
+              EN
+            </button>
+            <button
+              class="w-full justify-center flex items-center gap-2 px-3 py-2 rounded-lg border text-sm hover:bg-gray-50 dark:hover:bg-gray-800"
+              [ngClass]="
+                currentLang() === 'fr'
+                  ? 'border-brand-600'
+                  : 'border-gray-300 dark:border-gray-700'
+              "
+              (click)="changeLang('fr')"
+            >
+              <img
+                [src]="flags.fr"
+                alt=""
+                class="h-4 w-6 rounded-sm ring-1 ring-black/5"
+              />
+              FR
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="mt-2 pt-4 text-center text-xs text-gray-500 border-t border-gray-200 dark:border-gray-800"
+        >
+          © 2025 STRIDE
+        </div>
+      </div>
+    </div>
+  </aside>
+</header>

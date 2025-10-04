@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <base href="/" />
+    <title>STRIDE</title>
+    <meta property="og:title" content="STRIDE" />
+    <meta
+      property="og:description"
+      content="Gérez vos colis : tableaux de bord, suivi, recherche/filtre, et formulaires rapides."
+    />
+    <meta property="og:type" content="website" />
+
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      rel="stylesheet"
+    />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      href="https://cdn-icons-png.flaticon.com/512/2910/2910768.png"
+    />
+  </head>
+  <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100">
+    <div id="splash-loader">
+      <style>
+        #splash-loader {
+          position: fixed;
+          inset: 0;
+          display: grid;
+          place-items: center;
+          background: #0f172a;
+          color: #e5e7eb;
+          z-index: 99999;
+          transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+        #splash-loader.hidden {
+          opacity: 0;
+          visibility: hidden;
+        }
+        .splash-box {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.75rem;
+          font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto,
+            sans-serif;
+        }
+        .spinner {
+          width: 42px;
+          height: 42px;
+          border-radius: 50%;
+          border: 3px solid rgba(255, 255, 255, 0.25);
+          border-top-color: #fff;
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+        .brand {
+          font-weight: 600;
+          letter-spacing: 0.04em;
+          opacity: 0.9;
+        }
+      </style>
+      <div class="splash-box">
+        <div class="spinner" aria-label="…"></div>
+        <div class="brand">STRIDE</div>
+      </div>
+    </div>
+
+    <app-root></app-root>
+  </body>
+</html>

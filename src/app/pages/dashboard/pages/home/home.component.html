@@ -1,0 +1,850 @@
+<div class="flex flex-col min-h-screen">
+  <app-header></app-header>
+
+  <main class="relative z-auto flex-1">
+    <main class="px-3 py-4 mx-auto space-y-4 max-w-7xl md:px-6">
+      <header class="space-y-2 sm:space-y-0">
+        <div class="flex items-center justify-between">
+          <div class="text-base font-semibold uppercase truncate md:text-lg">
+            {{ dayName() }}
+          </div>
+
+          <details class="relative sm:hidden">
+            <summary
+              class="inline-flex items-center h-10 gap-2 px-3 text-sm list-none bg-white border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"
+            >
+              {{ "HOME.MENU" | translate }}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-4 h-4"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M7 10l5 5 5-5H7z" />
+              </svg>
+            </summary>
+
+            <div
+              class="absolute right-0 z-50 w-56 mt-2 bg-white border border-gray-200 shadow-lg rounded-xl dark:border-gray-800 dark:bg-gray-900"
+              role="menu"
+            >
+              <button
+                (click)="newSheet()"
+                class="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-800"
+                role="menuitem"
+              >
+                {{ "HOME.NEW" | translate }}
+              </button>
+              <button
+                (click)="openHistoryModal()"
+                class="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-800"
+                role="menuitem"
+              >
+                {{ "HOME.HISTORY" | translate }}
+              </button>
+              <div
+                class="my-1 border-t border-gray-200 dark:border-gray-800"
+              ></div>
+              <button
+                (click)="exportAllToFile()"
+                class="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-800"
+                role="menuitem"
+              >
+                {{ "HOME.EXPORT_ALL" | translate }}
+              </button>
+              <button
+                (click)="openImportDialog()"
+                class="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-800"
+                role="menuitem"
+              >
+                {{ "HOME.IMPORT" | translate }}
+              </button>
+              <button
+                (click)="clearAllStorage()"
+                class="w-full px-3 py-2 text-sm text-left text-red-600 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-900/20 rounded-b-xl"
+                role="menuitem"
+              >
+                {{ "HOME.CLEAR" | translate }}
+              </button>
+            </div>
+          </details>
+        </div>
+
+        <div
+          class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <input
+            type="date"
+            [ngModel]="selectedDate()"
+            (ngModelChange)="selectedDate.set($event)"
+            class="w-full h-10 min-w-0 px-3 text-sm text-gray-900 placeholder-gray-400 bg-white border border-gray-300 rounded-lg sm:w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500 dark:border-gray-700"
+          />
+
+          <button
+            (click)="saveOrUpdateSnapshot()"
+            class="w-full h-10 min-w-0 text-sm font-medium bg-white border border-gray-300 rounded-lg sm:w-64 hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"
+          >
+            {{
+              (currentSnapshotId()
+                ? "HOME.UPDATE_SNAPSHOT"
+                : "HOME.SAVE_SNAPSHOT"
+              ) | translate
+            }}
+          </button>
+
+          <!-- Desktop/tablet toolbar -->
+          <div class="items-center hidden gap-2 sm:flex">
+            <button
+              (click)="newSheet()"
+              class="h-10 px-3 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"
+            >
+              {{ "HOME.NEW" | translate }}
+            </button>
+
+            <button
+              (click)="openHistoryModal()"
+              class="h-10 px-3 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"
+            >
+              {{ "HOME.HISTORY" | translate }}
+            </button>
+
+            <!-- Options (desktop/tablet) -->
+            <details #optionsMenu class="relative">
+              <summary
+                class="inline-flex items-center h-10 gap-2 px-3 text-sm list-none bg-white border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"
+                aria-haspopup="menu"
+                aria-expanded="false"
+              >
+                {{ "HOME.OPTIONS" | translate }}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="w-4 h-4"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M7 10l5 5 5-5H7z" />
+                </svg>
+              </summary>
+
+              <div
+                class="absolute right-0 z-50 w-56 mt-2 bg-white border border-gray-200 shadow-lg rounded-xl dark:border-gray-800 dark:bg-gray-900"
+                role="menu"
+              >
+                <button
+                  (click)="exportAllToFile()"
+                  class="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-800"
+                  role="menuitem"
+                >
+                  {{ "HOME.EXPORT_ALL" | translate }}
+                </button>
+                <button
+                  (click)="openImportDialog()"
+                  class="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-800"
+                  role="menuitem"
+                >
+                  {{ "HOME.IMPORT" | translate }}
+                </button>
+                <div
+                  class="my-1 border-t border-gray-200 dark:border-gray-800"
+                ></div>
+                <button
+                  (click)="clearAllStorage()"
+                  class="w-full px-3 py-2 text-sm text-left text-red-600 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-900/20 rounded-b-xl"
+                  role="menuitem"
+                >
+                  {{ "HOME.CLEAR" | translate }}
+                </button>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <input
+          #fileInput
+          type="file"
+          accept="application/json,.json"
+          class="hidden"
+          (change)="onFileChosen($event)"
+        />
+      </header>
+
+      <section
+        class="bg-white border border-gray-200 rounded-xl dark:bg-gray-950 dark:border-gray-800"
+      >
+        <div class="overflow-x-auto scrollbar">
+          <div class="max-h-[55vh] overflow-y-auto scrollbar">
+            <table class="w-full min-w-[1100px] text-sm">
+              <thead
+                class="sticky top-0 z-10 text-[12px] text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 shadow-sm"
+              >
+                <tr
+                  class="[&>th]:py-2 [&>th]:px-2 border-b border-gray-200 dark:border-gray-800"
+                >
+                  <th class="text-center w-14">
+                    {{ "HOME.TH.NO" | translate }}
+                  </th>
+                  <th class="w-12 text-center">
+                    {{ "HOME.TH.PACKED" | translate }}
+                  </th>
+                  <th class="w-28">{{ "HOME.TH.TYPE" | translate }}</th>
+                  <th class="w-40">{{ "HOME.TH.LOCATION" | translate }}</th>
+                  <th class="w-16 text-center">
+                    {{ "HOME.TH.PAID" | translate }}
+                  </th>
+                  <th class="w-52">{{ "HOME.TH.CUSTOMER" | translate }}</th>
+                  <th class="w-32">{{ "HOME.TH.AMOUNT" | translate }}</th>
+                  <th class="w-32">
+                    {{ "HOME.TH.COAST" | translate }}
+                  </th>
+                  <th class="w-12 text-center">
+                    {{ "HOME.TH.DELIVERED" | translate }}
+                  </th>
+                  <th class="w-40">{{ "HOME.TH.COURIER" | translate }}</th>
+                  <th class="w-10">{{ "HOME.TH.ACTIONS" | translate }}</th>
+                </tr>
+              </thead>
+
+              <tbody
+                class="[&>tr]:border-b [&>tr]:border-gray-100 dark:[&>tr]:border-gray-900"
+              >
+                <tr
+                  *ngFor="let r of rows(); let i = index; trackBy: trackById"
+                  class="[&>td]:py-2 [&>td]:px-2 align-top"
+                >
+                  <td class="text-center">
+                    <input
+                      type="number"
+                      [(ngModel)]="r.num"
+                      (ngModelChange)="markDirtyAndSave()"
+                      class="w-12 h-10 text-center text-gray-900 placeholder-gray-400 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500 dark:border-gray-700"
+                    />
+                  </td>
+                  <td class="text-center">
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="r.packed"
+                      (change)="markDirtyAndSave()"
+                      class="w-5 h-5 mt-2 accent-indigo-600"
+                      [attr.aria-label]="'HOME.TH.PACKED' | translate"
+                    />
+                  </td>
+                  <td>
+                    <div class="relative">
+                      <input
+                        type="text"
+                        [(ngModel)]="r.type"
+                        (click)="showSuggestions(r.id, 'type')"
+                        (focus)="showSuggestions(r.id, 'type')"
+                        (blur)="hideSuggestionsSoon()"
+                        (ngModelChange)="
+                          r.type = $event?.toUpperCase(); markDirtyAndSave()
+                        "
+                        [placeholder]="'HOME.PLACEHOLDER.TYPE' | translate"
+                        class="h-10 w-[250px] rounded-md border px-2 bg-white text-gray-900 placeholder-gray-400 border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500 dark:border-gray-700"
+                      />
+
+                      <ng-container *ngIf="isSuggestOpen(r.id, 'type')">
+                        <ng-container
+                          *ngIf="filterSuggestions('type', r.type) as typeList"
+                        >
+                          <div
+                            *ngIf="typeList.length"
+                            class="absolute left-0 right-0 z-50 mt-1 overflow-auto bg-white border border-gray-200 rounded-lg shadow-lg top-full max-h-60 dark:bg-gray-900 dark:border-gray-800"
+                          >
+                            <button
+                              *ngFor="let s of typeList"
+                              type="button"
+                              (mousedown)="$event.preventDefault()"
+                              (click)="pickSuggestion(r, 'type', s)"
+                              class="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-800"
+                            >
+                              {{ s }}
+                            </button>
+                          </div>
+                        </ng-container>
+                      </ng-container>
+                    </div>
+                  </td>
+
+                  <td>
+                    <div class="relative">
+                      <input
+                        type="text"
+                        [(ngModel)]="r.location"
+                        (focus)="showSuggestions(r.id, 'location')"
+                        (click)="showSuggestions(r.id, 'location')"
+                        (blur)="hideSuggestionsSoon()"
+                        (ngModelChange)="
+                          r.location = $event?.toUpperCase(); markDirtyAndSave()
+                        "
+                        [placeholder]="'HOME.PLACEHOLDER.LOCATION' | translate"
+                        class="h-10 w-[250px] rounded-md border px-2 bg-white text-gray-900 placeholder-gray-400 border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500 dark:border-gray-700"
+                      />
+
+                      <ng-container *ngIf="isSuggestOpen(r.id, 'location')">
+                        <ng-container
+                          *ngIf="
+                            filterSuggestions('location', r.location) as locList
+                          "
+                        >
+                          <div
+                            *ngIf="locList.length"
+                            class="absolute left-0 right-0 z-50 mt-1 overflow-auto bg-white border border-gray-200 rounded-lg shadow-lg top-full max-h-60 dark:bg-gray-900 dark:border-gray-800"
+                          >
+                            <button
+                              *ngFor="let s of locList"
+                              type="button"
+                              (mousedown)="$event.preventDefault()"
+                              (click)="pickSuggestion(r, 'location', s)"
+                              class="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-800"
+                            >
+                              {{ s }}
+                            </button>
+                          </div>
+                        </ng-container>
+                      </ng-container>
+                    </div>
+                  </td>
+
+                  <td class="text-center">
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="r.payment"
+                      (change)="markDirtyAndSave()"
+                      class="w-5 h-5 mt-2 accent-amber-600"
+                      [attr.aria-label]="'HOME.TH.PAID' | translate"
+                    />
+                  </td>
+                  <td>
+                    <div class="relative">
+                      <input
+                        type="text"
+                        [(ngModel)]="r.customer"
+                        (focus)="showSuggestions(r.id, 'customer')"
+                        (click)="showSuggestions(r.id, 'customer')"
+                        (blur)="hideSuggestionsSoon()"
+                        (ngModelChange)="
+                          r.customer = $event?.toUpperCase(); markDirtyAndSave()
+                        "
+                        [placeholder]="'HOME.PLACEHOLDER.CUSTOMER' | translate"
+                        class="h-10 w-[250px] rounded-md border px-2 bg-white text-gray-900 placeholder-gray-400 border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500 dark:border-gray-700"
+                      />
+
+                      <ng-container *ngIf="isSuggestOpen(r.id, 'customer')">
+                        <ng-container
+                          *ngIf="
+                            filterSuggestions(
+                              'customer',
+                              r.customer
+                            ) as custList
+                          "
+                        >
+                          <div
+                            *ngIf="custList.length"
+                            class="absolute left-0 right-0 z-50 mt-1 overflow-auto bg-white border border-gray-200 rounded-lg shadow-lg top-full max-h-60 dark:bg-gray-900 dark:border-gray-800"
+                          >
+                            <button
+                              *ngFor="let s of custList"
+                              type="button"
+                              (mousedown)="$event.preventDefault()"
+                              (click)="pickSuggestion(r, 'customer', s)"
+                              class="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-800"
+                            >
+                              {{ s }}
+                            </button>
+                          </div>
+                        </ng-container>
+                      </ng-container>
+                    </div>
+                  </td>
+
+                  <td>
+                    <div>
+                      <input
+                        type="text"
+                        inputmode="numeric"
+                        autocomplete="off"
+                        [(ngModel)]="r.amount"
+                        (ngModelChange)="
+                          r.amount = formatAmountExpr($event);
+                          markDirtyAndSave()
+                        "
+                        (keydown.space)="$event.preventDefault()"
+                        (paste)="onAmountPaste($event, r)"
+                        (blur)="collapseAmountField(r, 'amount')"
+                        [placeholder]="'HOME.PLACEHOLDER.AMOUNT' | translate"
+                        class="h-10 w-[120px] rounded-md border px-2 text-right bg-white text-gray-900 placeholder-gray-400 border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500 dark:border-gray-700"
+                      />
+                      <div
+                        *ngIf="r.amount"
+                        class="mt-1 text-[11px] text-gray-500 dark:text-gray-400 text-right"
+                        aria-live="polite"
+                      >
+                        = {{ previewAmount(r.amount) }}
+                      </div>
+                    </div>
+                  </td>
+
+                  <td>
+                    <div>
+                      <input
+                        type="text"
+                        inputmode="numeric"
+                        autocomplete="off"
+                        [(ngModel)]="r.coast"
+                        (ngModelChange)="
+                          r.coast = formatAmountExpr($event); markDirtyAndSave()
+                        "
+                        (keydown.space)="$event.preventDefault()"
+                        (paste)="onCoastPaste($event, r)"
+                        (blur)="collapseAmountField(r, 'coast')"
+                        [placeholder]="'HOME.PLACEHOLDER.AMOUNT' | translate"
+                        class="h-10 w-[120px] rounded-md border px-2 text-right bg-white text-gray-900 placeholder-gray-400 border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500 dark:border-gray-700"
+                      />
+                      <div
+                        *ngIf="r.coast"
+                        class="mt-1 text-[11px] text-gray-500 dark:text-gray-400 text-right"
+                        aria-live="polite"
+                      >
+                        = {{ previewAmount(r.coast) }}
+                      </div>
+                    </div>
+                  </td>
+
+                  <td class="text-center">
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="r.delivered"
+                      (change)="markDirtyAndSave()"
+                      class="w-5 h-5 mt-2 accent-emerald-600"
+                      [attr.aria-label]="'HOME.TH.DELIVERED' | translate"
+                    />
+                  </td>
+                  <td>
+                    <select
+                      [(ngModel)]="r.courier"
+                      (change)="markDirtyAndSave()"
+                      class="h-10 w-[100px] rounded-md border px-2 bg-white text-gray-900 border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-gray-900 dark:text-gray-100 dark:border-gray-700"
+                    >
+                      <option value="">—</option>
+                      <option *ngFor="let c of couriers" [value]="c">
+                        {{ c }}
+                      </option>
+                    </select>
+                  </td>
+                  <td class="text-right">
+                    <button
+                      (click)="removeRow(i)"
+                      class="grid px-2 text-red-600 rounded-md h-9 place-items-center hover:bg-red-50 dark:hover:bg-red-900/20"
+                      [title]="'HOME.REMOVE' | translate"
+                    >
+                      ×
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ACTION BAR -->
+        <div
+          class="p-3 mt-6 space-y-2 border-t border-gray-200 dark:border-gray-800"
+        >
+          <!-- Row 1 (mobile) -->
+          <div
+            class="flex gap-2 px-1 -mx-1 overflow-x-auto sm:hidden scrollbar snap-x snap-mandatory"
+          >
+            <button
+              (click)="addRow()"
+              class="h-10 px-4 text-sm bg-white border border-gray-300 rounded-lg snap-start shrink-0 hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"
+            >
+              {{ "HOME.ROW_ADD" | translate }}
+            </button>
+            <button
+              (click)="addTenRow()"
+              class="h-10 px-4 text-sm bg-white border border-gray-300 rounded-lg snap-start shrink-0 hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"
+            >
+              {{ "HOME.ROW_ADD" | translate }} (10)
+            </button>
+            <button
+              (click)="checkAllPacked()"
+              class="h-10 px-4 text-sm bg-white border border-gray-300 rounded-lg snap-start shrink-0 hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"
+            >
+              {{ "HOME.CHECK_ALL_PACKED" | translate }}
+            </button>
+            <button
+              (click)="removeAllLines()"
+              class="h-10 px-4 text-sm bg-white border border-gray-300 rounded-lg snap-start shrink-0 hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"
+            >
+              {{ "HOME.REMOVE_ALL_LINES" | translate }}
+            </button>
+
+            <!-- More menu (mobile) -->
+            <details class="relative snap-end shrink-0">
+              <summary
+                class="inline-flex items-center h-10 gap-2 px-4 text-sm list-none bg-white border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"
+              >
+                {{ "HOME.MORE" | translate }}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="w-4 h-4"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M7 10l5 5 5-5H7z" />
+                </svg>
+              </summary>
+              <div
+                class="absolute right-0 z-50 w-56 bg-white border border-gray-200 shadow-lg rounded-xl dark:border-gray-800 dark:bg-gray-900"
+                role="menu"
+              >
+                <button
+                  (click)="saveOrUpdateSnapshot()"
+                  class="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-800"
+                  role="menuitem"
+                >
+                  {{
+                    (currentSnapshotId()
+                      ? "HOME.UPDATE_SNAPSHOT"
+                      : "HOME.SAVE_SNAPSHOT"
+                    ) | translate
+                  }}
+                </button>
+                <div
+                  class="px-3 py-2 text-xs text-gray-500 dark:text-gray-400"
+                  role="menuitem"
+                >
+                  {{ "HOME.DATE_LABEL" | translate }}:
+                  <span class="font-medium">{{ selectedDate() }}</span>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <!-- Row 2 (mobile): prominent snapshot button + date below -->
+          <div class="space-y-2 sm:hidden">
+            <button
+              (click)="saveOrUpdateSnapshot()"
+              class="w-full h-10 text-sm font-medium bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"
+            >
+              {{
+                (currentSnapshotId()
+                  ? "HOME.UPDATE_SNAPSHOT"
+                  : "HOME.SAVE_SNAPSHOT"
+                ) | translate
+              }}
+            </button>
+            <div class="text-xs text-gray-600 dark:text-gray-400">
+              {{ "HOME.DATE_LABEL" | translate }}:
+              <span class="font-medium">{{ selectedDate() }}</span>
+            </div>
+          </div>
+
+          <!-- Desktop / tablet toolbar -->
+          <div class="flex-wrap items-center hidden gap-2 sm:flex">
+            <button
+              (click)="addRow()"
+              class="h-10 px-4 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"
+            >
+              {{ "HOME.ROW_ADD" | translate }}
+            </button>
+            <button
+              (click)="addTenRow()"
+              class="h-10 px-4 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"
+            >
+              {{ "HOME.ROW_ADD" | translate }} (10)
+            </button>
+            <button
+              (click)="checkAllPacked()"
+              class="h-10 px-4 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"
+            >
+              {{ "HOME.CHECK_ALL_PACKED" | translate }}
+            </button>
+            <button
+              (click)="removeAllLines()"
+              class="h-10 px-4 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"
+            >
+              {{ "HOME.REMOVE_ALL_LINES" | translate }}
+            </button>
+
+            <div class="flex items-center gap-3 ml-auto">
+              <span class="text-sm text-gray-700 dark:text-gray-300">
+                {{ "HOME.DATE_LABEL" | translate }}:
+                <span class="font-medium">{{ selectedDate() }}</span>
+              </span>
+              <button
+                (click)="saveOrUpdateSnapshot()"
+                class="h-10 px-3 text-sm font-medium bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"
+              >
+                {{
+                  (currentSnapshotId()
+                    ? "HOME.UPDATE_SNAPSHOT"
+                    : "HOME.SAVE_SNAPSHOT"
+                  ) | translate
+                }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SUMMARY BY COURIER -->
+      <section
+        class="p-3 bg-white border border-gray-200 rounded-xl dark:bg-gray-950 dark:border-gray-800"
+        aria-labelledby="courier-summary-title"
+      >
+        <div class="flex items-center justify-between mb-4">
+          <h2
+            id="courier-summary-title"
+            class="text-xl font-medium text-gray-800 dark:text-gray-100"
+          >
+            {{ "HOME.SUMMARY_TITLE" | translate }}
+          </h2>
+
+          <!-- TOTAL NET (top-right) -->
+          <div
+            class="px-3 py-2 text-right bg-white border border-gray-200 shrink-0 rounded-xl dark:border-gray-800 dark:bg-gray-900 md:px-4 md:py-3"
+            aria-label="Total net"
+          >
+            <div
+              class="text-[10px] uppercase tracking-wide text-gray-500 dark:text-gray-400"
+            >
+              {{ "NET" | translate }}
+            </div>
+            <div
+              class="text-base font-semibold md:text-lg"
+              [ngClass]="{
+                'text-emerald-600 dark:text-emerald-400':
+                  grandTotals().net >= 0,
+                'text-rose-600 dark:text-rose-400': grandTotals().net < 0
+              }"
+            >
+              {{ grandTotals().net | number }} Ar
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <article
+            *ngFor="let item of totalsByCourier()"
+            class="relative overflow-hidden transition-shadow bg-white border border-gray-200 shadow-sm group rounded-2xl dark:border-gray-800 dark:bg-gray-900 hover:shadow-md"
+          >
+            <div class="w-full h-1"></div>
+
+            <div class="p-3 md:p-4">
+              <div class="flex items-center gap-3 mb-4">
+                <div
+                  class="grid text-sm font-semibold text-gray-800 bg-gray-100 h-9 w-9 place-items-center rounded-xl dark:bg-gray-800 dark:text-gray-100"
+                  aria-hidden="true"
+                >
+                  {{ (item.courier || "—").slice(0, 2) }}
+                </div>
+                <div class="min-w-0">
+                  <div
+                    class="text-base font-semibold text-gray-900 truncate dark:text-gray-100"
+                  >
+                    {{ item.courier || "—" }}
+                  </div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ "NET" | translate }}:
+                    <span
+                      class="font-semibold"
+                      [ngClass]="{
+                        'text-emerald-600 dark:text-emerald-400': item.net >= 0,
+                        'text-rose-600 dark:text-rose-400': item.net < 0
+                      }"
+                    >
+                      {{ item.net | number }} Ar
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-3 gap-2 mt-3">
+                <div
+                  class="p-2 border border-gray-100 rounded-xl dark:border-gray-800"
+                >
+                  <div
+                    class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400"
+                  >
+                    {{ "GROSS" | translate }}
+                  </div>
+                  <div
+                    class="text-sm font-medium text-gray-900 dark:text-gray-100"
+                  >
+                    {{ item.gross | number }} Ar
+                  </div>
+                </div>
+
+                <div
+                  class="p-2 border border-gray-100 rounded-xl dark:border-gray-800"
+                >
+                  <div
+                    class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400"
+                  >
+                    {{ "FEES" | translate }}
+                  </div>
+                  <div
+                    class="text-sm font-medium text-gray-900 dark:text-gray-100"
+                  >
+                    {{ item.fees | number }} Ar
+                  </div>
+                </div>
+
+                <div
+                  class="p-2 border border-gray-100 rounded-xl dark:border-gray-800"
+                >
+                  <div
+                    class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400"
+                  >
+                    {{ "NET" | translate }}
+                  </div>
+                  <div
+                    class="text-sm font-semibold"
+                    [ngClass]="{
+                      'text-emerald-600 dark:text-emerald-400': item.net >= 0,
+                      'text-rose-600 dark:text-rose-400': item.net < 0
+                    }"
+                  >
+                    {{ item.net | number }} Ar
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <div
+            *ngIf="totalsByCourier().length === 0"
+            class="flex items-center justify-center p-6 text-sm text-gray-500 border border-gray-200 border-dashed col-span-full rounded-xl dark:border-gray-800 dark:text-gray-400"
+          >
+            {{ "HOME.NO_DELIVERED" | translate }}
+          </div>
+        </div>
+      </section>
+    </main>
+  </main>
+
+  <app-footer></app-footer>
+</div>
+<ng-container *ngIf="showHistory()">
+  <div
+    class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
+    (click)="closeHistoryModal()"
+    aria-hidden="true"
+  ></div>
+
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="history-modal-title"
+  >
+    <div
+      class="w-full max-w-5xl overflow-hidden bg-white border border-gray-200 rounded-2xl shadow-xl dark:bg-gray-950 dark:border-gray-800"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- Modal header -->
+      <div
+        class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800"
+      >
+        <h2 id="history-modal-title" class="text-lg font-semibold">
+          {{ "HOME.SAVED_SNAPSHOTS" | translate }}
+        </h2>
+        <button
+          type="button"
+          class="h-9 px-3 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"
+          (click)="closeHistoryModal()"
+        >
+          {{ "HOME.CLOSE" | translate }}
+        </button>
+      </div>
+
+      <!-- Modal body -->
+      <div class="p-3">
+        <div class="overflow-x-auto scrollbar">
+          <table class="w-full min-w-[720px] text-sm">
+            <thead
+              class="text-[12px] text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-900"
+            >
+              <tr
+                class="[&>th]:py-2 [&>th]:px-2 border-b border-gray-200 dark:border-gray-800"
+              >
+                <th class="w-48">{{ "HOME.SAVED_AT" | translate }}</th>
+                <th class="w-32">{{ "HOME.DATE_LABEL" | translate }}</th>
+                <th class="w-64">{{ "HOME.NAME" | translate }}</th>
+                <th class="w-20 text-right">{{ "HOME.ROWS" | translate }}</th>
+                <th class="text-right w-28">
+                  {{ "HOME.DELIVERED_COL" | translate }}
+                </th>
+                <th class="w-40 text-right">
+                  {{ "HOME.TOTAL_AR" | translate }}
+                </th>
+                <th class="w-56 text-right"></th>
+              </tr>
+            </thead>
+            <tbody
+              class="[&>tr]:border-b [&>tr]:border-gray-100 dark:[&>tr]:border-gray-900"
+            >
+              <tr *ngFor="let s of snapshots()" class="[&>td]:py-2 [&>td]:px-2">
+                <td>{{ s.ts | date : "yyyy-MM-dd HH:mm" }}</td>
+                <td>{{ s.dateISO }}</td>
+                <td class="truncate">{{ s.name }}</td>
+                <td class="text-right">{{ s.rows.length }}</td>
+                <td class="text-right">{{ deliveredCountOf(s) }}</td>
+                <td class="text-right">{{ deliveredTotalOf(s) | number }}</td>
+                <td class="flex justify-end gap-1">
+                  <!-- Load -->
+                  <button
+                    type="button"
+                    (click)="$event.stopPropagation(); loadSnapshot(s.id)"
+                    class="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-700 dark:text-emerald-300"
+                  >
+                    {{ "HOME.LOAD" | translate }}
+                  </button>
+
+                  <!-- Rename -->
+                  <button
+                    type="button"
+                    (click)="renameSnapshot(s.id)"
+                    class="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 dark:bg-indigo-900/20 dark:border-indigo-700 dark:text-indigo-300"
+                  >
+                    {{ "HOME.RENAME" | translate }}
+                  </button>
+
+                  <!-- Delete -->
+                  <button
+                    type="button"
+                    (click)="deleteSnapshot(s.id)"
+                    class="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 dark:bg-red-900/20 dark:border-red-700 dark:text-red-300"
+                  >
+                    {{ "HOME.DELETE" | translate }}
+                  </button>
+                </td>
+              </tr>
+
+              <tr *ngIf="snapshots().length === 0">
+                <td colspan="7" class="py-3 text-gray-500 dark:text-gray-400">
+                  {{ "HOME.NO_SNAPSHOTS" | translate }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Modal footer (facultatif) -->
+      <div
+        class="flex items-center justify-end gap-2 px-4 py-3 border-t border-gray-200 dark:border-gray-800"
+      >
+        <button
+          type="button"
+          class="h-9 px-3 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"
+          (click)="closeHistoryModal()"
+        >
+          {{ "HOME.CLOSE" | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-container>

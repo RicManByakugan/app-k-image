@@ -1,0 +1,184 @@
+{
+  "ALERT": {
+    "CANCEL": "Cancel",
+    "OK": "OK",
+    "SAVE": "Save",
+    "PLEASE_CONFIRM": "Please confirm",
+    "INPUT_REQUIRED": "Input required",
+    "NOTICE": "Notice"
+  },
+  "NAV": {
+    "HOME": "Home",
+    "GUIDE": "Guide",
+    "SUPPORT": "Support",
+    "LANGUAGE": "Language",
+    "THEME": "Theme",
+    "LIGHT": "Light",
+    "DARK": "Dark",
+    "SYSTEM": "System"
+  },
+  "FOOTER": {
+    "DEV": "Developer"
+  },
+  "GROSS": "Gross",
+  "FEES": "Fees",
+  "NET": "Net",
+  "HOME": {
+    "MENU": "Menu",
+    "OPTIONS": "Options",
+    "SAVED_SNAPSHOTS": "Saved snapshots",
+    "CLOSE": "Close",
+    "SAVED_AT": "Saved at",
+    "DATE_LABEL": "Date",
+    "NAME": "Name",
+    "ROWS": "Rows",
+    "DELIVERED_COL": "Delivered",
+    "TOTAL_AR": "Total (Ar)",
+    "LOAD": "Load",
+    "RENAME": "Rename",
+    "DELETE": "Delete",
+    "NO_SNAPSHOTS": "No snapshots yet.",
+    "ROW_ADD": "+ Row",
+    "CHECK_ALL_PACKED": "Check all (Packed)",
+    "REMOVE_ALL_LINES": "Remove all lines",
+    "MORE": "More",
+    "SAVE_SNAPSHOT": "Save snapshot",
+    "UPDATE_SNAPSHOT": "Update snapshot",
+    "REMOVE": "Remove",
+
+    "NEW": "New",
+    "HISTORY": "History",
+    "EXPORT_ALL": "Export all",
+    "IMPORT": "Import",
+    "CLEAR": "Clear",
+
+    "TH": {
+      "NO": "No.",
+      "PACKED": "Packed",
+      "TYPE": "Type",
+      "LOCATION": "Location",
+      "PAID": "Paid",
+      "CUSTOMER": "Customer",
+      "AMOUNT": "Amount",
+      "COAST": "Fees",
+      "DELIVERED": "Delivered",
+      "COURIER": "Courier",
+      "ACTIONS": "Actions"
+    },
+
+    "SUMMARY_TITLE": "Summary",
+    "NO_DELIVERED": "No delivered rows yet.",
+
+    "PLACEHOLDER": {
+      "TYPE": "e.g. TANA / PROVINCE",
+      "LOCATION": "e.g. Andraharo",
+      "CUSTOMER": "e.g. John Doe / +261…",
+      "AMOUNT": "30 000+60 000"
+    },
+
+    "ALERT": {
+      "SHEET_IMPORTED": "Sheet imported.",
+      "ALL_DATA_IMPORTED": "All data imported.",
+      "ALL_DATA_CLEARED": "All local data cleared.",
+      "SNAPSHOT_SAVED": "Saved new snapshot: \"{{name}}\"",
+      "SNAPSHOT_UPDATED": "Updated snapshot: \"{{name}}\"",
+      "SEE_RESULT": "Delivered parcels: {{count}}\nTotal delivered amount: {{total}} Ar",
+      "FAILED_IMPORT": "Failed to import file. {{message}}"
+    },
+    "CONFIRM": {
+      "IMPORT_ALL": "Importing all data will replace autosaves and snapshots for this app. Continue?",
+      "REMOVE_ROW": "Remove this row?",
+      "CLEAR_ALL": "Clear all saved data (autosave, snapshots, session)?",
+      "DELETE_SNAPSHOT": "Delete this snapshot ?",
+      "REMOVE_ALL_LINES": "Remove all lines?",
+      "NEW_SHEET": "Create new sheet for today? Unsaved changes will be lost."
+    },
+    "PROMPT": {
+      "RENAME_SNAPSHOT": "Rename snapshot:"
+    }
+  },
+  "GUIDE": {
+    "HERO": {
+      "TITLE": "STRIDE - User Guide",
+      "SUB": "Manage parcels by day: capture rows, mark packed/paid/delivered, assign couriers, save snapshots, and export/import data. This guide explains every option in the app.",
+      "CHIP_AUTOSAVE": "Local autosave",
+      "CHIP_SNAP": "Snapshots",
+      "CHIP_JSON": "JSON export/import"
+    },
+    "SIDEBAR": {
+      "CONTENTS": "Contents",
+      "ABOUT": "About the App",
+      "TOPBAR": "Top Bar",
+      "SHEET": "Daily Sheet",
+      "ACTIONS": "Sheet Actions",
+      "SNAPSHOTS": "Snapshots",
+      "FILES": "Export / Import",
+      "SUMMARY": "Summary by Courier",
+      "FAQ": "Quick FAQ"
+    },
+    "SECTION": {
+      "ABOUT": {
+        "TITLE": "About the App",
+        "BODY": "STRIDE lets you record a day’s parcels by date, mark their status (packed, paid, delivered), assign a courier, and track amounts. Data is auto-saved per date in your browser (localStorage) with a working copy in sessionStorage. You can also export to JSON and import later."
+      },
+      "TOPBAR": {
+        "TITLE": "Top Bar",
+        "DATE": "Date — chooses the working day. Each date has its own sheet.",
+        "NEW": "New — creates a fresh sheet for today (resets table).",
+        "HISTORY": "History — opens the saved snapshots panel.",
+        "OPTIONS": "Options ▾",
+        "EXPORT_ALL": "Export all — download a JSON with all autosaves & snapshots.",
+        "IMPORT": "Import… — load a previously exported JSON (single sheet or all data).",
+        "CLEAR": "Clear storage — remove all local data (autosaves, snapshots, session)."
+      },
+      "SHEET": {
+        "TITLE": "Daily Sheet",
+        "NO": "No. — line number (editable).",
+        "PACKED": "Packed — checkbox.",
+        "TYPE": "Type — free text (e.g., TANA / PROVINCE).",
+        "LOCATION": "Location — free text (e.g., Andraharo).",
+        "PAID": "Paid — checkbox.",
+        "CUSTOMER": "Customer — name/phone.",
+        "AMOUNT": "Amount — e.g., “30 000” or “30k”. Non-numeric chars are ignored; “k” = thousand.",
+        "DELIVERED": "Delivered — checkbox.",
+        "COURIER": "Courier — select (DERA, HERY, ALPHA, NJAKA, MAMY).",
+        "DELETE": "× — delete the row.",
+        "AUTOSAVE_CARD_TITLE": "Autosave",
+        "AUTOSAVE_CARD_BODY": "The app autosaves shortly after each edit (~250 ms debounce).",
+        "AMOUNT_CARD_TITLE": "Amount format",
+        "AMOUNT_CARD_BODY": "“45k” → “45,000”; “30 000” → “30000”."
+      },
+      "ACTIONS": {
+        "TITLE": "Sheet Actions",
+        "ROW": "+ Row — add a blank line.",
+        "CHECK": "Check all (Packed) — mark “Packed” on every line.",
+        "REMOVE": "Remove all lines — clear all lines in the sheet.",
+        "SNAP": "Save snapshot / Update snapshot — save a frozen copy of the sheet (with name + timestamp) or overwrite the linked snapshot."
+      },
+      "SNAPSHOTS": {
+        "TITLE": "Snapshots",
+        "BODY": "Snapshots are manual saves with a name and timestamp. You can Load, Rename, or Delete. The table also shows delivered count and delivered total computed from the snapshot."
+      },
+      "FILES": {
+        "TITLE": "Export / Import",
+        "EXPORT": "Export all — JSON with every autosave and snapshot.",
+        "IMPORT": "Import… — accepts a “sheet” JSON (replaces only current sheet) or an “all-data” JSON (replaces autosaves + snapshots after confirmation).",
+        "LOCAL": "Everything is stored locally in the browser — nothing is sent to a server."
+      },
+      "SUMMARY": {
+        "TITLE": "Summary by Courier",
+        "BODY": "Totals for rows marked “Delivered”, grouped by courier. Useful for end-of-day reconciliation."
+      },
+      "FAQ": {
+        "TITLE": "Quick FAQ",
+        "Q1": "Where is my data stored?",
+        "A1": "In your browser: localStorage (per date + snapshots) and sessionStorage (working copy).",
+        "Q2": "Can I save a file?",
+        "A2": "Yes — via Options → Export all. Re-import later with Options → Import….",
+        "Q3": "How do I reset?",
+        "A3": "Use Options → Clear storage (wipe everything) or New (new sheet for today only).",
+        "BACK_TOP": "Back to top"
+      }
+    }
+  }
+}
