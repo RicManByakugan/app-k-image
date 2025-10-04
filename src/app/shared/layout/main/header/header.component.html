@@ -1,6 +1,6 @@
 <!-- AFTER: put the whole header stacking context above everything -->
 <header
-  class="sticky top-0 z-[10000] h-16 border-b border-gray-200/70 dark:border-gray-800 bg-white/70 dark:bg-gray-900/60 shadow-[0_2px_12px_rgba(0,0,0,0.04)]"
+  class="sticky top-0 z-[999] h-16 border-b border-gray-200/70 dark:border-gray-800 bg-white/70 dark:bg-gray-900/60 shadow-[0_2px_12px_rgba(0,0,0,0.04)]"
 >
   <div
     class="mx-auto max-w-7xl h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between"
@@ -26,12 +26,6 @@
     <div class="flex items-center gap-2 md:gap-4">
       <!-- Desktop nav -->
       <nav class="hidden md:flex items-center gap-6">
-        <a
-          [routerLink]="['/guide']"
-          class="text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-brand-600 hover:underline underline-offset-4"
-        >
-          {{ "NAV.GUIDE" | translate }}
-        </a>
         <a
           href="https://ratovonirina.onrender.com/"
           target="_blank"
@@ -149,7 +143,7 @@
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-2">
           <span
-            class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 "
+            class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600"
           >
             <i class="fa-solid fa-box"></i>
           </span>
@@ -172,12 +166,7 @@
         >
           {{ "NAV.HOME" | translate }}
         </a>
-        <a
-          [routerLink]="['/guide']"
-          class="block px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800"
-        >
-          {{ "NAV.GUIDE" | translate }}
-        </a>
+
         <a
           href="https://ratovonirina.onrender.com/"
           target="_blank"

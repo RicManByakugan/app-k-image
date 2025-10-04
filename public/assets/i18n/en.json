@@ -32,7 +32,7 @@
     "CONFIRM_CLEAR": "Delete all saved items and reset the app?",
     "TODAY": "Today",
     "PHOTOS": {
-      "TITLE": "Client-assigned products (photos)",
+      "TITLE": "Client-assigned products",
       "ADD": "Add",
       "ADD_TITLE": "Add photos",
       "CLIENT": "Client name",
