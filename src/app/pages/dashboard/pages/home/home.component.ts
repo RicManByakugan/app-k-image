@@ -6,6 +6,7 @@ import {
   signal,
   effect,
   computed,
+  HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -55,6 +56,11 @@ export class HomeComponent {
   private t = inject(TranslateService);
   private alerts = inject(AlertService);
 
+  actionLoading: boolean = false;
+
+  gridCols: number = this.readGridCols();
+
+  // DnD
   isDragging = signal(false);
 
   // UI
@@ -67,8 +73,8 @@ export class HomeComponent {
   private hideSuggestTimer?: number;
 
   suggestions = {
-    customers: customer, // string[]
-    locations: location, // string[]
+    customers: customer,
+    locations: location,
   };
 
   // Form
@@ -81,56 +87,6 @@ export class HomeComponent {
     this.items.set(this.readAll());
     effect(() => this.writeAll(this.items()));
   }
-
-  isSuggestOpen(field: 'client' | 'location') {
-    return this.openSuggest().field === field;
-  }
-  showSuggestions(field: 'client' | 'location') {
-    if (this.hideSuggestTimer) {
-      clearTimeout(this.hideSuggestTimer);
-      this.hideSuggestTimer = undefined;
-    }
-    this.openSuggest.set({ field });
-  }
-  hideSuggestionsSoon() {
-    if (this.hideSuggestTimer) clearTimeout(this.hideSuggestTimer);
-    this.hideSuggestTimer = window.setTimeout(() => {
-      this.openSuggest.set({ field: null });
-      this.hideSuggestTimer = undefined;
-    }, 120);
-  }
-
-  /** Filtre (préfixe prioritaire puis contient), limite 8 */
-  filterSuggestions(field: 'client' | 'location', query: string): string[] {
-    const pool =
-      field === 'client'
-        ? this.suggestions.customers
-        : this.suggestions.locations;
-    const q = (query || '').toUpperCase().trim();
-    if (!q) return pool.slice(0, 8);
-    const starts: string[] = [];
-    const contains: string[] = [];
-    for (let i = 0; i < pool.length; i++) {
-      const v = pool[i];
-      const u = v.toUpperCase();
-      if (u.startsWith(q)) starts.push(v);
-      else if (u.includes(q)) contains.push(v);
-      if (starts.length + contains.length >= 24) break;
-    }
-    return starts.concat(contains).slice(0, 8);
-  }
-
-  pickSuggestion(field: 'client' | 'location', value: string) {
-    const d = { ...this.draft() };
-    if (field === 'client') d.client = value;
-    else d.location = value;
-    this.draft.set(d);
-    this.openSuggest.set({ field: null });
-  }
-
-  openSuggest = signal<{ field: 'client' | 'location' | null }>({
-    field: null,
-  });
 
   // ====== I18n helper ======
   private i18n(key: string, params?: Record<string, any>) {
@@ -210,43 +166,66 @@ export class HomeComponent {
     return URL.createObjectURL(file);
   }
 
+  // SUBMIT (pas de loader)
   async submit() {
     const d = this.draft();
+
     if (!d.client.trim()) {
-      await this.alerts.alert(this.i18n('HOME.PHOTOS.VALIDATION_REQUIRED'));
+      await this.alerts.alert(
+        this.t.instant('HOME.PHOTOS.VALIDATION_REQUIRED')
+      );
       return;
     }
     if (!d.files.length) {
-      await this.alerts.alert(this.i18n('HOME.PHOTOS.NO_FILES'));
+      await this.alerts.alert(this.t.instant('HOME.PHOTOS.NO_FILES'));
       return;
     }
 
-    const images: ImageEntry[] = [];
-    for (const f of d.files) {
-      const dataUrl = await this.resizeToDataURL(f, 1280, 0.8);
-      images.push({
+    this.actionLoading = true; // ⬅️ démarre le loader
+    try {
+      const images: ImageEntry[] = [];
+      for (const f of d.files) {
+        const dataUrl = await this.resizeToDataURL(f, 1280, 0.8);
+        images.push({
+          id: crypto.randomUUID(),
+          dataUrl,
+          mime: 'image/jpeg',
+          name: f.name || 'image',
+        });
+      }
+
+      const now = Date.now();
+      const item: PhotoItem = {
         id: crypto.randomUUID(),
-        dataUrl,
-        mime: 'image/jpeg',
-        name: f.name || 'image',
-      });
+        client: d.client.trim(),
+        location: d.location.trim(),
+        note: d.note?.trim() ?? '',
+        createdAt: now,
+        images,
+      };
+
+      this.items.update((arr) => [item, ...arr]);
+      this.isAddOpen.set(false);
+      await this.alerts.alert(this.t.instant('HOME.PHOTOS.SAVED'));
+    } finally {
+      this.actionLoading = false;
     }
-
-    const now = Date.now();
-    const item: PhotoItem = {
-      id: crypto.randomUUID(),
-      client: d.client.trim(),
-      location: d.location.trim(),
-      note: d.note?.trim() ?? '',
-      createdAt: now,
-      images,
-    };
-
-    this.items.update((arr) => [item, ...arr]);
-    this.isAddOpen.set(false);
-    await this.alerts.alert(this.i18n('HOME.PHOTOS.SAVED'));
+  }
+  private readGridCols(): number {
+    try {
+      const raw = localStorage.getItem('client-photos-grid-cols');
+      const n = raw ? parseInt(raw, 10) : 2;
+      return [1, 2, 3].includes(n) ? n : 2;
+    } catch {
+      return 2;
+    }
   }
 
+  setGridCols(n: number) {
+    if (![1, 2, 3].includes(n)) return;
+    this.gridCols = n;
+    localStorage.setItem('client-photos-grid-cols', String(n));
+  }
   // ====== List actions ======
   async removeItem(id: string) {
     const ok = await this.alerts.confirm(
@@ -264,6 +243,9 @@ export class HomeComponent {
   }
   clearFilter() {
     this.selectedDateFilter.set(null);
+  }
+  onDateInputChange(val: string) {
+    this.selectedDateFilter.set(val?.trim() ? val : null);
   }
 
   // ====== Export / Import / Clear ======
@@ -287,10 +269,12 @@ export class HomeComponent {
   openImportDialog() {
     this.importInput?.nativeElement.click();
   }
+
   async onImportChosen(ev: Event) {
     const input = ev.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
+
     try {
       const text = await file.text();
       const json = JSON.parse(text);
@@ -359,6 +343,7 @@ export class HomeComponent {
     return canvas.toDataURL('image/jpeg', quality);
   }
 
+  // ---- DnD ----
   onDragOver(ev: DragEvent) {
     ev.preventDefault();
     this.isDragging.set(true);
@@ -376,7 +361,6 @@ export class HomeComponent {
     if (files.length) this.mergeFilesIntoDraft(files);
   }
   mergeFilesIntoDraft(files: File[]) {
-    // éviter les doublons par (name+size) simple
     const existing = new Set(
       this.draft().files.map((f) => `${f.name}::${f.size}`)
     );
@@ -393,5 +377,111 @@ export class HomeComponent {
       f.type.startsWith('image/')
     );
     this.mergeFilesIntoDraft(files);
+  }
+
+  // ---- Suggestions ----
+  openSuggest = signal<{ field: 'client' | 'location' | null }>({
+    field: null,
+  });
+  isSuggestOpen(field: 'client' | 'location') {
+    return this.openSuggest().field === field;
+  }
+  showSuggestions(field: 'client' | 'location') {
+    if (this.hideSuggestTimer) {
+      clearTimeout(this.hideSuggestTimer);
+      this.hideSuggestTimer = undefined;
+    }
+    this.openSuggest.set({ field });
+  }
+  hideSuggestionsSoon() {
+    if (this.hideSuggestTimer) clearTimeout(this.hideSuggestTimer);
+    this.hideSuggestTimer = window.setTimeout(() => {
+      this.openSuggest.set({ field: null });
+      this.hideSuggestTimer = undefined;
+    }, 120);
+  }
+  filterSuggestions(field: 'client' | 'location', query: string): string[] {
+    const pool =
+      field === 'client'
+        ? this.suggestions.customers
+        : this.suggestions.locations;
+    const q = (query || '').toUpperCase().trim();
+    if (!q) return pool.slice(0, 8);
+    const starts: string[] = [];
+    const contains: string[] = [];
+    for (let i = 0; i < pool.length; i++) {
+      const v = pool[i];
+      const u = v.toUpperCase();
+      if (u.startsWith(q)) starts.push(v);
+      else if (u.includes(q)) contains.push(v);
+      if (starts.length + contains.length >= 24) break;
+    }
+    return starts.concat(contains).slice(0, 8);
+  }
+  pickSuggestion(field: 'client' | 'location', value: string) {
+    const d = { ...this.draft() };
+    if (field === 'client') d.client = value;
+    else d.location = value;
+    this.draft.set(d);
+    this.openSuggest.set({ field: null });
+  }
+
+  /** Index de cover par item.id */
+  coverIndex: Record<string, number> = {};
+
+  /** Viewer plein écran */
+  viewerOpen: boolean = false;
+  viewerImages: ImageEntry[] = [];
+  viewerIndex: number = 0;
+  viewerTitle: string = '';
+
+  @HostListener('document:keydown', ['$event'])
+  onKey(e: KeyboardEvent) {
+    if (!this.viewerOpen) return;
+    if (e.key === 'Escape') this.closeViewer();
+    else if (e.key === 'ArrowLeft') this.prevImage();
+    else if (e.key === 'ArrowRight') this.nextImage();
+  }
+  getCoverIndex(it: PhotoItem): number {
+    const idx = this.coverIndex[it.id];
+    return Number.isInteger(idx) ? idx : 0;
+  }
+  coverOf(it: PhotoItem): ImageEntry | null {
+    const idx = this.getCoverIndex(it);
+    return it.images?.[idx] ?? it.images?.[0] ?? null;
+  }
+  setCover(it: PhotoItem, idx: number) {
+    if (!it.images || idx < 0 || idx >= it.images.length) return;
+    this.coverIndex[it.id] = idx;
+  }
+
+  /** Viewer */
+  openViewer(it: PhotoItem, idx: number = 0) {
+    if (!it.images?.length) return;
+    this.viewerImages = it.images;
+    this.viewerIndex = Math.min(Math.max(0, idx), it.images.length - 1);
+    this.viewerTitle = it.client || '';
+    this.viewerOpen = true;
+    try {
+      document.body.classList.add('overflow-hidden');
+    } catch {}
+  }
+  closeViewer() {
+    this.viewerOpen = false;
+    this.viewerImages = [];
+    this.viewerIndex = 0;
+    try {
+      document.body.classList.remove('overflow-hidden');
+    } catch {}
+  }
+  prevImage() {
+    if (!this.viewerImages.length) return;
+    this.viewerIndex =
+      (this.viewerIndex - 1 + this.viewerImages.length) %
+      this.viewerImages.length;
+  }
+  nextImage() {
+    if (!this.viewerImages.length) return;
+    this.viewerIndex = (this.viewerIndex + 1) % this.viewerImages.length;
   }
 }

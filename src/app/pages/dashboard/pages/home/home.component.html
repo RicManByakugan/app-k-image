@@ -3,44 +3,177 @@
 
   <main class="relative z-auto flex-1">
     <div class="px-3 py-4 mx-auto space-y-4 max-w-6xl md:px-6">
-      <!-- Header -->
+      <!-- Header (carte propre + outils responsives) -->
       <div
-        class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+        class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-3 md:p-4 space-y-3"
       >
-        <div class="min-w-0">
-          <h1 class="text-lg font-semibold md:text-xl">
-            {{ "HOME.PHOTOS.TITLE" | translate }}
-          </h1>
-          <div class="text-xs text-gray-600 dark:text-gray-400">
-            {{ "HOME.PHOTOS.DATE" | translate }}:
-            <span class="font-medium">{{ todayISO }}</span> ({{
-              "HOME.TODAY" | translate
-            }})
+        <!-- Ligne 1: Titre + bouton principal + menu mobile -->
+        <div class="flex items-center justify-between gap-2">
+          <div class="min-w-0">
+            <h1 class="text-lg font-semibold md:text-xl truncate">
+              {{ "HOME.PHOTOS.TITLE" | translate }}
+            </h1>
+            <div class="text-xs text-gray-600 dark:text-gray-400">
+              {{ "HOME.PHOTOS.DATE" | translate }}:
+              <span class="font-medium">{{ todayISO }}</span>
+              ({{ "HOME.TODAY" | translate }})
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              (click)="openAddModal()"
+              class="h-10 px-3 text-sm font-medium text-white rounded-lg bg-indigo-600 hover:bg-indigo-700"
+              title="Ajouter"
+            >
+              {{ "HOME.PHOTOS.ADD" | translate }}
+            </button>
+
+            <!-- Menu compact mobile -->
+            <details class="relative sm:hidden">
+              <summary
+                class="h-10 px-3 text-sm bg-white border border-gray-300 rounded-lg list-none cursor-pointer hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800 inline-flex items-center gap-2"
+              >
+                <i class="fas fa-ellipsis-h"></i>
+              </summary>
+              <div
+                class="absolute right-0 z-[60] mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-lg dark:bg-gray-900 dark:border-gray-800 p-1"
+                role="menu"
+              >
+                <button
+                  (click)="openImportDialog()"
+                  class="w-full px-3 py-2 text-sm text-left rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
+                  role="menuitem"
+                >
+                  <i class="fas fa-file-import mr-2"></i
+                  >{{ "HOME.PHOTOS.IMPORT" | translate }}
+                </button>
+                <button
+                  (click)="exportAll()"
+                  class="w-full px-3 py-2 text-sm text-left rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
+                  role="menuitem"
+                >
+                  <i class="fas fa-file-export mr-2"></i
+                  >{{ "HOME.PHOTOS.EXPORT" | translate }}
+                </button>
+                <button
+                  (click)="clearAll()"
+                  class="w-full px-3 py-2 text-sm text-left text-red-600 rounded-lg hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-900/20"
+                  role="menuitem"
+                >
+                  <i class="fas fa-broom mr-2"></i
+                  >{{ "HOME.CLEAR_ALL" | translate }}
+                </button>
+              </div>
+            </details>
           </div>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2">
-          <button
-            (click)="exportAll()"
-            class="h-10 px-3 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"
-          >
-            {{ "HOME.PHOTOS.EXPORT" | translate }}
-          </button>
+        <!-- Ligne 2: Outils (défilable en mobile) -->
+        <div
+          class="flex items-center gap-2 overflow-x-auto scrollbar -mx-1 px-1"
+        >
+          <!-- Sélecteur de date -->
+          <div class="shrink-0">
+            <label class="sr-only">Date</label>
+            <input
+              type="date"
+              [ngModel]="selectedDateFilter() ?? ''"
+              (ngModelChange)="onDateInputChange($event)"
+              class="h-10 px-3 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
+            />
+          </div>
 
-          <button
-            (click)="openImportDialog()"
-            class="h-10 px-3 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"
+          <div
+            class="shrink-0 inline-flex rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden"
           >
-            {{ "HOME.PHOTOS.IMPORT" | translate }}
-          </button>
+            <!-- 1 col -->
+            <button
+              class="h-10 px-3 text-sm border-r border-gray-300 dark:border-gray-700"
+              [ngClass]="
+                gridCols === 1
+                  ? ['bg-indigo-600', 'text-white']
+                  : [
+                      'bg-white',
+                      'text-gray-800',
+                      'dark:bg-gray-900',
+                      'dark:text-gray-100'
+                    ]
+              "
+              (click)="setGridCols(1)"
+              title="1 colonne"
+              type="button"
+            >
+              1
+            </button>
 
-          <button
-            (click)="clearAll()"
-            class="h-10 px-3 text-sm text-red-600 bg-white border border-red-300 rounded-lg hover:bg-red-50 dark:bg-gray-900 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/20"
-          >
-            {{ "HOME.CLEAR_ALL" | translate }}
-          </button>
+            <!-- 2 cols -->
+            <button
+              class="h-10 px-3 text-sm border-r border-gray-300 dark:border-gray-700"
+              [ngClass]="
+                gridCols === 2
+                  ? ['bg-indigo-600', 'text-white']
+                  : [
+                      'bg-white',
+                      'text-gray-800',
+                      'dark:bg-gray-900',
+                      'dark:text-gray-100'
+                    ]
+              "
+              (click)="setGridCols(2)"
+              title="2 colonnes"
+              type="button"
+            >
+              2
+            </button>
 
+            <!-- 3 cols -->
+            <button
+              class="h-10 px-3 text-sm"
+              [ngClass]="
+                gridCols === 3
+                  ? ['bg-indigo-600', 'text-white']
+                  : [
+                      'bg-white',
+                      'text-gray-800',
+                      'dark:bg-gray-900',
+                      'dark:text-gray-100'
+                    ]
+              "
+              (click)="setGridCols(3)"
+              title="3 colonnes"
+              type="button"
+            >
+              3
+            </button>
+          </div>
+
+          <!-- Boutons desktop/tablette -->
+          <div class="hidden sm:flex items-center gap-2 ml-auto">
+            <button
+              (click)="openImportDialog()"
+              class="h-10 px-3 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"
+            >
+              <i class="fas fa-file-import mr-2"></i
+              >{{ "HOME.PHOTOS.IMPORT" | translate }}
+            </button>
+            <button
+              (click)="exportAll()"
+              class="h-10 px-3 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"
+            >
+              <i class="fas fa-file-export mr-2"></i
+              >{{ "HOME.PHOTOS.EXPORT" | translate }}
+            </button>
+            <button
+              (click)="clearAll()"
+              class="h-10 px-3 text-sm text-red-600 bg-white border border-red-300 rounded-lg hover:bg-red-50 dark:bg-gray-900 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/20"
+            >
+              <i class="fas fa-broom mr-2"></i
+              >{{ "HOME.CLEAR_ALL" | translate }}
+            </button>
+          </div>
+
+          <!-- input import caché -->
           <input
             #importInput
             type="file"
@@ -48,13 +181,6 @@
             class="hidden"
             (change)="onImportChosen($event)"
           />
-
-          <button
-            (click)="openAddModal()"
-            class="h-10 px-3 text-sm font-medium text-white rounded-lg bg-indigo-600 hover:bg-indigo-700"
-          >
-            {{ "HOME.PHOTOS.ADD" | translate }}
-          </button>
         </div>
       </div>
 
@@ -96,16 +222,25 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div
+            class="grid gap-3"
+            [ngClass]="{
+              'grid-cols-1': gridCols === 1,
+              'grid-cols-2': gridCols === 2,
+              'grid-cols-3': gridCols === 3
+            }"
+          >
             <article
               *ngFor="let it of g.items"
               class="overflow-hidden border rounded-2xl bg-white dark:bg-gray-950 dark:border-gray-800"
             >
+              <!-- Cover (clic = viewer) -->
               <img
-                *ngIf="it.images?.[0] as cover"
+                *ngIf="coverOf(it) as cover"
                 [src]="cover.dataUrl"
-                class="block object-cover w-full h-48"
+                class="block object-cover w-full h-48 cursor-zoom-in"
                 alt="cover"
+                (click)="openViewer(it, getCoverIndex(it))"
               />
 
               <div class="p-3 space-y-2">
@@ -138,12 +273,19 @@
                   {{ it.note }}
                 </p>
 
+                <!-- Miniatures : clic = set cover -->
                 <div class="flex -space-x-2">
                   <img
-                    *ngFor="let img of it.images | slice : 0 : 5"
+                    *ngFor="let img of it.images; let i = index"
                     [src]="img.dataUrl"
                     alt="thumb"
-                    class="inline-block w-9 h-9 rounded-lg ring-2 ring-white dark:ring-gray-900 object-cover"
+                    (click)="setCover(it, i)"
+                    class="inline-block w-9 h-9 rounded-lg ring-2 object-cover cursor-pointer transition"
+                    [ngClass]="{
+                      'ring-indigo-500': getCoverIndex(it) === i,
+                      'ring-white dark:ring-gray-900 opacity-80 hover:opacity-100':
+                        getCoverIndex(it) !== i
+                    }"
                   />
                 </div>
 
@@ -309,7 +451,9 @@
               (dragleave)="onDragLeave($event)"
               (drop)="onDropFiles($event)"
             >
-              <i class="fas fa-upload text-gray-500 dark:text-gray-300 text-4xl opacity-80"></i>
+              <i
+                class="fas fa-upload text-gray-500 dark:text-gray-300 text-4xl opacity-80"
+              ></i>
 
               <p class="mt-2 text-sm text-gray-700 dark:text-gray-200">
                 Glissez-déposez vos images ici
@@ -372,11 +516,68 @@
             {{ "HOME.CANCEL" | translate }}
           </button>
           <button
-            class="h-9 px-3 text-sm text-white rounded-lg bg-indigo-600 hover:bg-indigo-700"
+            class="h-9 px-3 text-sm text-white rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 disabled:cursor-not-allowed inline-flex items-center gap-2"
             (click)="submit()"
+            [disabled]="actionLoading"
           >
+            <i *ngIf="actionLoading" class="fas fa-spinner fa-spin"></i>
             {{ "HOME.SAVE" | translate }}
           </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Viewer plein écran -->
+  <div *ngIf="viewerOpen" class="fixed inset-0 z-[9999]">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/80" (click)="closeViewer()"></div>
+
+    <!-- Contenu centré -->
+    <div class="absolute inset-0 flex items-center justify-center p-3">
+      <div class="relative w-full max-w-6xl">
+        <!-- Bouton close -->
+        <button
+          type="button"
+          class="z-[9999] absolute -top-2 right-0 md:-top-6 md:-right-6 h-10 w-10 rounded-full bg-white/90 dark:bg-gray-900/90 border border-gray-200 dark:border-gray-700 shadow inline-flex items-center justify-center"
+          (click)="closeViewer()"
+          aria-label="Close"
+        >
+          <i class="fas fa-times"></i>
+        </button>
+
+        <!-- Image + flèches -->
+        <div class="relative bg-black/60 rounded-xl p-2 md:p-3">
+          <img
+            [src]="viewerImages[viewerIndex]?.dataUrl"
+            alt="image"
+            class="block mx-auto max-h-[80vh] w-auto max-w-full object-contain rounded-lg"
+          />
+
+          <!-- Prev -->
+          <button
+            type="button"
+            class="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/90 dark:bg-gray-900/90 border border-gray-200 dark:border-gray-700 shadow inline-flex items-center justify-center"
+            (click)="prevImage()"
+            aria-label="Previous"
+          >
+            <i class="fas fa-chevron-left"></i>
+          </button>
+
+          <!-- Next -->
+          <button
+            type="button"
+            class="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/90 dark:bg-gray-900/90 border border-gray-200 dark:border-gray-700 shadow inline-flex items-center justify-center"
+            (click)="nextImage()"
+            aria-label="Next"
+          >
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+
+        <!-- Légende -->
+        <div class="mt-2 text-center text-xs text-gray-200">
+          {{ viewerTitle }} — {{ viewerIndex + 1 }} / {{ viewerImages.length }}
         </div>
       </div>
     </div>
