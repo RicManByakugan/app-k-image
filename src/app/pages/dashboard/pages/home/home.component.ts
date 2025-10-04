@@ -84,8 +84,18 @@ export class HomeComponent {
   importInput?: ElementRef<HTMLInputElement>;
 
   constructor() {
-    void this.ensureBackup().then((ok) => {
-      this.items.set(ok ? this.readAll() : []);
+    void this.ensureBackup().then(async (ok) => {
+      if (!ok) {
+        this.items.set([]);
+        return;
+      }
+      const local = this.readAll();
+      if (local.length > 0) {
+        this.items.set(local);
+      } else {
+        // <- RESTAURE DEPUIS LA BASE
+        await this.restoreFromDatabase();
+      }
     });
     effect(() => this.writeAll(this.items()));
 
@@ -95,6 +105,101 @@ export class HomeComponent {
         this.backupFolderName = (h as any).name ?? '…';
         localStorage.setItem('backup-configured', '1');
       }
+    });
+  }
+
+  private async restoreFromDatabase() {
+    try {
+      const okBase = await this.ensureBackup();
+      if (!okBase) return;
+
+      const packs = await this.fs.getAllItems(); // [{meta, blobs}]
+      const hydrated: PhotoItem[] = [];
+
+      for (const { meta, blobs } of packs) {
+        if (!meta || !Array.isArray(meta.images)) continue;
+
+        const images: ImageEntry[] = [];
+        for (const im of meta.images) {
+          const blob = blobs[im.id];
+          if (!blob) continue;
+          const thumbDataUrl = await this.resizeToDataURL(blob, 320, 0.7); // <- génère miniature
+          images.push({
+            id: im.id,
+            dataUrl: thumbDataUrl,
+            mime: im.mime,
+            name: im.name,
+          });
+        }
+
+        hydrated.push({
+          id: meta.id,
+          client: meta.client,
+          location: meta.location,
+          note: meta.note,
+          createdAt: meta.createdAt,
+          images,
+        });
+      }
+
+      // tri décroissant par date pour cohérence
+      hydrated.sort((a, b) => b.createdAt - a.createdAt);
+
+      this.items.set(hydrated);
+      // <- l'effect writeAll() va persister en localStorage
+    } catch (e) {
+      console.warn('restoreFromDatabase failed:', e);
+      this.items.set([]); // état safe
+    }
+  }
+
+  private loadImage(fileOrBlob: Blob): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onerror = () => reject(new Error('file read error'));
+      fr.onload = () => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error('image decode error'));
+        img.src = fr.result as string;
+        img.decoding = 'async';
+      };
+      fr.readAsDataURL(fileOrBlob);
+    });
+  }
+  private fit(w: number, h: number, maxDim: number) {
+    if (w <= maxDim && h <= maxDim) return { w, h };
+    const r = w > h ? maxDim / w : maxDim / h;
+    return { w: Math.round(w * r), h: Math.round(h * r) };
+  }
+  private async resizeToDataURL(
+    fileOrBlob: Blob,
+    maxDim: number,
+    quality: number
+  ): Promise<string> {
+    const img = await this.loadImage(fileOrBlob);
+    const { w, h } = this.fit(img.width, img.height, maxDim);
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d')!;
+    ctx.drawImage(img, 0, 0, w, h);
+    return canvas.toDataURL('image/jpeg', quality);
+  }
+  private async resizeToBlob(
+    fileOrBlob: Blob,
+    maxDim: number,
+    quality: number
+  ): Promise<Blob> {
+    const img = await this.loadImage(fileOrBlob);
+    const { w, h } = this.fit(img.width, img.height, maxDim);
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d')!;
+    ctx.drawImage(img, 0, 0, w, h);
+    return await new Promise<Blob>((resolve) => {
+      canvas.toBlob((b) => resolve(b!), 'image/jpeg', quality);
     });
   }
 
@@ -235,6 +340,7 @@ export class HomeComponent {
   async submit() {
     const d = this.draft();
 
+    // Validations simples
     if (!d.client.trim()) {
       await this.alerts.alert(
         this.t.instant('HOME.PHOTOS.VALIDATION_REQUIRED')
@@ -246,15 +352,18 @@ export class HomeComponent {
       return;
     }
 
+    // Base requise (dossier/OPFS/IDB)
     const okBase = await this.ensureBackup();
     if (!okBase) {
-      await this.alerts.alert(this.t.instant('HOME.BACKUP.REQUIRED'));
-      await this.chooseBackupFolder();
+      await this.alerts.alert(this.t.instant('HOME.BACKUP.REQUIRED')); // "Veuillez sélectionner une base…"
+      // Optionnel : proposer l’ouverture du sélecteur
+      // await this.chooseBackupFolder();
       return;
     }
 
     this.actionLoading = true;
     try {
+      // Prépare les images : miniature (pour l'UI) + blob (pour la base)
       const imagesForApp: ImageEntry[] = [];
       const blobsById: Record<string, Blob> = {};
 
@@ -272,6 +381,7 @@ export class HomeComponent {
         blobsById[id] = bigBlob;
       }
 
+      // Métadonnées de l'item
       const now = Date.now();
       const itemForApp: PhotoItem = {
         id: crypto.randomUUID(),
@@ -282,7 +392,7 @@ export class HomeComponent {
         images: imagesForApp,
       };
 
-      // Ecriture *d'abord* dans la base
+      // 1) ÉCRIRE D'ABORD DANS LA BASE (si ça échoue -> on n'insère pas dans l'UI)
       await this.fs.writeItemTree(
         {
           id: itemForApp.id,
@@ -299,17 +409,22 @@ export class HomeComponent {
         blobsById
       );
 
-      // Puis affichage local
+      // 2) Puis mettre à jour l'UI + localStorage
       this.items.update((arr) => [itemForApp, ...arr]);
+      this.resetDraft();
       this.isAddOpen.set(false);
 
       await this.alerts.alert(this.t.instant('HOME.PHOTOS.SAVED'));
-    } catch (e) {
-      // si erreur : on invalide la base
+    } catch (e: any) {
+      // Erreur d’écriture (dossier supprimé, permission perdue, etc.)
       this.backupReady.set(false);
       this.backupFolderName = null;
       localStorage.removeItem('backup-configured');
-      await this.alerts.alert(this.t.instant('HOME.BACKUP.MISSING'));
+
+      // Message générique (ou remplace par 'HOME.BACKUP.MISSING' si tu as la clé)
+      await this.alerts.alert(
+        this.t.instant('HOME.BACKUP.SAVE_FAILED', { message: e?.message || '' })
+      );
     } finally {
       this.actionLoading = false;
     }
@@ -500,55 +615,7 @@ export class HomeComponent {
   private resetDraft() {
     this.draft.set({ client: '', location: '', note: '', files: [] });
   }
-  private loadImage(file: File): Promise<HTMLImageElement> {
-    return new Promise((resolve, reject) => {
-      const fr = new FileReader();
-      fr.onerror = () => reject(new Error('file read error'));
-      fr.onload = () => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = () => reject(new Error('image decode error'));
-        img.src = fr.result as string;
-        img.decoding = 'async';
-      };
-      fr.readAsDataURL(file);
-    });
-  }
-  private fit(w: number, h: number, maxDim: number) {
-    if (w <= maxDim && h <= maxDim) return { w, h };
-    const r = w > h ? maxDim / w : maxDim / h;
-    return { w: Math.round(w * r), h: Math.round(h * r) };
-  }
-  private async resizeToDataURL(
-    file: File,
-    maxDim: number,
-    quality: number
-  ): Promise<string> {
-    const img = await this.loadImage(file);
-    const { w, h } = this.fit(img.width, img.height, maxDim);
-    const canvas = document.createElement('canvas');
-    canvas.width = w;
-    canvas.height = h;
-    const ctx = canvas.getContext('2d')!;
-    ctx.drawImage(img, 0, 0, w, h);
-    return canvas.toDataURL('image/jpeg', quality);
-  }
-  private async resizeToBlob(
-    file: File,
-    maxDim: number,
-    quality: number
-  ): Promise<Blob> {
-    const img = await this.loadImage(file);
-    const { w, h } = this.fit(img.width, img.height, maxDim);
-    const canvas = document.createElement('canvas');
-    canvas.width = w;
-    canvas.height = h;
-    const ctx = canvas.getContext('2d')!;
-    ctx.drawImage(img, 0, 0, w, h);
-    return await new Promise<Blob>((resolve) => {
-      canvas.toBlob((b) => resolve(b!), 'image/jpeg', quality);
-    });
-  }
+
   private async dataUrlToBlob(dataUrl: string): Promise<Blob> {
     const res = await fetch(dataUrl);
     return await res.blob();
