@@ -218,7 +218,7 @@
           <div class="flex items-center justify-between">
             <h2 class="text-base font-semibold">{{ g.date }}</h2>
             <div class="text-xs text-gray-600 dark:text-gray-400">
-              {{ g.items.length }} {{ "HOME.PHOTOS.IMAGES" | translate }}
+              {{ g.items.length }} {{ "HOME.PHOTOS.TOTAL" | translate }}
             </div>
           </div>
 
@@ -456,20 +456,27 @@
               ></i>
 
               <p class="mt-2 text-sm text-gray-700 dark:text-gray-200">
-                Glissez-déposez vos images ici
+                {{ "HOME.PHOTOS.DND_HINT" | translate }}
               </p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">ou</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                {{ "HOME.OR" | translate }}
+              </p>
+
+              <input
+                id="filePicker"
+                type="file"
+                accept="image/*"
+                multiple
+                class="sr-only"
+                (change)="onPickFiles($event)"
+              />
+
               <label
+                for="filePicker"
                 class="mt-2 inline-flex items-center h-9 px-3 text-sm font-medium text-white rounded-lg cursor-pointer bg-indigo-600 hover:bg-indigo-700"
               >
-                Parcourir…
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  class="hidden"
-                  (change)="onPickFiles($event)"
-                />
+                <i class="fas fa-folder-open mr-2"></i>
+                {{ "HOME.BROWSE" | translate }}
               </label>
             </div>
 
