@@ -56,36 +56,28 @@ type Draft = {
 export class HomeComponent {
   private t = inject(TranslateService);
   private alerts = inject(AlertService);
-  fs = inject(FsBackupService); // public pour le template
+  fs = inject(FsBackupService);
 
-  actionLoading: boolean = false; // loader du bouton "SAVE" (modal ajout)
-  savingDb: boolean = false; // loader du bouton "Save" (DB)
-  clearingDb: boolean = false; // loader du bouton "Clear" (DB)
+  actionLoading = false;
+  savingDb = false;
+  clearingDb = false;
 
   gridCols: number = this.readGridCols();
+  get isGallery(): boolean {
+    return this.gridCols >= 5;
+  }
 
-  // DnD
   isDragging = signal(false);
-
-  // UI
   isAddOpen = signal(false);
 
-  // Données
   private readonly STORAGE_KEY = 'client-photos-v1';
   items = signal<PhotoItem[]>([]);
-  selectedDateFilter = signal<string | null>(null); // 'yyyy-MM-dd' ou null
-  private hideSuggestTimer?: number;
+  selectedDateFilter = signal<string | null>(null);
 
-  // Emplacement backup (nom du dossier, si choisi)
   backupFolderName: string | null = null;
   backupReady = signal<boolean>(false);
 
-  suggestions = {
-    customers: customer,
-    locations: location,
-  };
-
-  // Form
+  suggestions = { customers: customer, locations: location };
   draft = signal<Draft>({ client: '', location: '', note: '', files: [] });
 
   @ViewChild('importInput', { static: false })
@@ -93,46 +85,25 @@ export class HomeComponent {
 
   constructor() {
     void this.ensureBackup().then((ok) => {
-      this.items.set(ok ? this.readAll() : []); // si pas de base -> rien à afficher
+      this.items.set(ok ? this.readAll() : []);
     });
-
-    this.items.set(this.readAll());
     effect(() => this.writeAll(this.items()));
-    // Récupération du handle dossier s'il existe déjà
-    void this.fs.getHandle().then((h) => {
-      this.backupFolderName = h ? (h as any).name ?? '…' : null;
-      if (h) localStorage.setItem('backup-configured', '1');
+
+    // juste pour afficher le nom si déjà configuré
+    void this.fs.getHandle()?.then((h) => {
+      if (h) {
+        this.backupFolderName = (h as any).name ?? '…';
+        localStorage.setItem('backup-configured', '1');
+      }
     });
   }
 
-  // ====== I18n helper ======
+  // i18n
   private i18n(key: string, params?: Record<string, any>) {
     return this.t.instant(key, params);
   }
 
-  get isGallery(): boolean {
-    return this.gridCols >= 5;
-  }
-
-  private readGridCols(): number {
-    try {
-      const raw = localStorage.getItem('client-photos-grid-cols');
-      const n = raw ? parseInt(raw, 10) : 2;
-      // <— autoriser 1,2,3,5,6
-      return [1, 2, 3, 5, 6].includes(n) ? n : 2;
-    } catch {
-      return 2;
-    }
-  }
-
-  setGridCols(n: number) {
-    // <— autoriser 1,2,3,5,6
-    if (![1, 2, 3, 5, 6].includes(n)) return;
-    this.gridCols = n;
-    localStorage.setItem('client-photos-grid-cols', String(n));
-  }
-
-  // ====== Date utils ======
+  // dates
   private toISODateLocal(ts: number) {
     const d = new Date(ts);
     const pad = (n: number) => String(n).padStart(2, '0');
@@ -140,7 +111,7 @@ export class HomeComponent {
   }
   readonly todayISO = this.toISODateLocal(Date.now());
 
-  // Groupement par date (yyyy-MM-dd)
+  // groupements
   readonly groups = computed(() => {
     const map = new Map<string, PhotoItem[]>();
     for (const it of this.items()) {
@@ -159,14 +130,13 @@ export class HomeComponent {
     return sortedKeys.map((k) => ({ date: k, items: map.get(k)! }));
   });
 
-  // Liste filtrée (si une date est sélectionnée)
   readonly filteredGroups = computed(() => {
     const f = this.selectedDateFilter();
     if (!f) return this.groups();
     return this.groups().filter((g) => g.date === f);
   });
 
-  // ====== Storage (local) ======
+  // localStorage
   private readAll(): PhotoItem[] {
     try {
       const raw = localStorage.getItem(this.STORAGE_KEY);
@@ -184,69 +154,52 @@ export class HomeComponent {
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(items));
   }
 
+  // base (dossier)
   private async ensureBackup(): Promise<boolean> {
     if (!this.fs.isSupported) {
       this.backupReady.set(false);
       this.backupFolderName = null;
       localStorage.removeItem('backup-configured');
-      return false;
-    }
-
-    const handle = await this.fs.getHandle();
-    if (!handle) {
-      this.backupReady.set(false);
-      this.backupFolderName = null;
-      localStorage.removeItem('backup-configured');
-      return false;
-    }
-
-    try {
-      // 1) S’assure d’avoir la permission RW
-      const permFn = (handle as any).requestPermission?.bind(handle);
-      if (permFn) {
-        const p = await permFn({ mode: 'readwrite' });
-        if (p !== 'granted') throw new Error('Permission denied');
-      }
-
-      // 2) PROBE: itère une entrée (si le dossier n’existe plus => NotFoundError)
-      const entries = (handle as any).entries?.();
-      if (entries && typeof entries[Symbol.asyncIterator] === 'function') {
-        for await (const _ of entries) break; // on “pique” une entrée et stop
-      } else {
-        // Fallback minimal : pas d’API entries() (selon impl), on continue
-      }
-
-      // OK : base prête
-      this.backupFolderName = (handle as any).name ?? '…';
-      this.backupReady.set(true);
-      localStorage.setItem('backup-configured', '1');
-      return true;
-    } catch {
-      // Le dossier a été supprimé / inaccessible
-      this.backupReady.set(false);
-      this.backupFolderName = null;
-      localStorage.removeItem('backup-configured');
-
-      // On purge l’affichage pour éviter toute illusion de base existante
       this.items.set([]);
       return false;
     }
+    const dir = await this.fs.verifyHandle();
+    if (!dir) {
+      this.backupReady.set(false);
+      this.backupFolderName = null;
+      localStorage.removeItem('backup-configured');
+      this.items.set([]);
+      return false;
+    }
+    this.backupFolderName = (dir as any).name ?? '…';
+    this.backupReady.set(true);
+    localStorage.setItem('backup-configured', '1');
+    return true;
   }
 
-  // ====== List actions ======
+  async chooseBackupFolder() {
+    if (!this.fs.isSupported) {
+      await this.alerts.alert(this.t.instant('HOME.BACKUP.NOT_SUPPORTED'));
+      return;
+    }
+    const handle = await this.fs.pickFolder();
+    if (!handle) return;
+    await this.ensureBackup();
+    await this.alerts.alert(
+      this.t.instant('HOME.BACKUP.SET_OK', { name: this.backupFolderName })
+    );
+  }
+
+  // liste
   async removeItem(id: string) {
     const ok = await this.alerts.confirm(
       this.t.instant('HOME.PHOTOS.CONFIRM_DELETE')
     );
     if (!ok) return;
 
-    // retire l’élément de la liste locale
     this.items.update((arr) => arr.filter((x) => x.id !== id));
-
-    // nettoie l’index de cover si présent
     delete this.coverIndex[id];
 
-    // si on avait le viewer ouvert sur cet item, on peut le fermer (optionnel)
     if (
       this.viewerOpen &&
       this.viewerImages.length &&
@@ -256,7 +209,7 @@ export class HomeComponent {
     }
   }
 
-  // ====== Modal / Form ======
+  // modal
   openAddModal() {
     this.resetDraft();
     this.isAddOpen.set(true);
@@ -269,7 +222,6 @@ export class HomeComponent {
     const d = { ...this.draft(), [field]: value };
     this.draft.set(d);
   }
-
   removeDraftFile(idx: number) {
     const d = { ...this.draft(), files: [...this.draft().files] };
     d.files.splice(idx, 1);
@@ -279,25 +231,7 @@ export class HomeComponent {
     return URL.createObjectURL(file);
   }
 
-  // Choisir le dossier de backup
-  async chooseBackupFolder() {
-    if (!this.fs.isSupported) {
-      await this.alerts.alert(this.t.instant('HOME.BACKUP.NOT_SUPPORTED'));
-      return;
-    }
-    const handle = await this.fs.pickFolder();
-    if (!handle) return;
-
-    this.backupFolderName = (handle as any).name ?? '…';
-    localStorage.setItem('backup-configured', '1');
-    await this.ensureBackup(); // revalide et active backupReady
-
-    await this.alerts.alert(
-      this.t.instant('HOME.BACKUP.SET_OK', { name: this.backupFolderName })
-    );
-  }
-
-  // SUBMIT (modal) — sauvegarde locale + dossier (si configuré)
+  // submit
   async submit() {
     const d = this.draft();
 
@@ -314,7 +248,7 @@ export class HomeComponent {
 
     const okBase = await this.ensureBackup();
     if (!okBase) {
-      await this.alerts.alert(this.t.instant('HOME.BACKUP.REQUIRED')); // "Veuillez sélectionner une base avant d'ajouter des données."
+      await this.alerts.alert(this.t.instant('HOME.BACKUP.REQUIRED'));
       await this.chooseBackupFolder();
       return;
     }
@@ -348,48 +282,49 @@ export class HomeComponent {
         images: imagesForApp,
       };
 
-      // Local
+      // Ecriture *d'abord* dans la base
+      await this.fs.writeItemTree(
+        {
+          id: itemForApp.id,
+          client: itemForApp.client,
+          location: itemForApp.location,
+          note: itemForApp.note,
+          createdAt: itemForApp.createdAt,
+          images: imagesForApp.map((im) => ({
+            id: im.id,
+            name: im.name,
+            mime: im.mime,
+          })),
+        },
+        blobsById
+      );
+
+      // Puis affichage local
       this.items.update((arr) => [itemForApp, ...arr]);
       this.isAddOpen.set(false);
 
-      // Dossier (si configuré)
-      try {
-        await this.fs.writeItemTree(
-          {
-            id: itemForApp.id,
-            client: itemForApp.client,
-            location: itemForApp.location,
-            note: itemForApp.note,
-            createdAt: itemForApp.createdAt,
-            images: imagesForApp.map((im) => ({
-              id: im.id,
-              name: im.name,
-              mime: im.mime,
-            })),
-          },
-          blobsById
-        );
-      } catch (e) {
-        console.warn('Backup write failed:', e);
-      }
-
       await this.alerts.alert(this.t.instant('HOME.PHOTOS.SAVED'));
+    } catch (e) {
+      // si erreur : on invalide la base
+      this.backupReady.set(false);
+      this.backupFolderName = null;
+      localStorage.removeItem('backup-configured');
+      await this.alerts.alert(this.t.instant('HOME.BACKUP.MISSING'));
     } finally {
       this.actionLoading = false;
     }
   }
 
-  // ====== SAVE ALL to DB (dossier) ======
+  // save all
   async saveAllToDb() {
     if (!this.fs.isSupported) {
       await this.alerts.alert(this.t.instant('HOME.BACKUP.NOT_SUPPORTED'));
       return;
     }
-    let handle = await this.fs.getHandle();
-    if (!handle) {
-      await this.chooseBackupFolder();
-      handle = await this.fs.getHandle();
-      if (!handle) return;
+    const okBase = await this.ensureBackup();
+    if (!okBase) {
+      await this.alerts.alert(this.t.instant('HOME.BACKUP.REQUIRED'));
+      return;
     }
 
     this.savingDb = true;
@@ -398,7 +333,6 @@ export class HomeComponent {
       for (const it of list) {
         const blobs: Record<string, Blob> = {};
         for (const im of it.images) {
-          // on convertit la miniature (dataURL) en blob
           blobs[im.id] = await this.dataUrlToBlob(im.dataUrl);
         }
         await this.fs.writeItemTree(
@@ -420,15 +354,14 @@ export class HomeComponent {
       await this.alerts.alert(this.t.instant('HOME.BACKUP.SAVE_DONE'));
     } catch (e: any) {
       await this.alerts.alert(
-        this.t.instant('HOME.BACKUP.SAVE_FAILED', {
-          message: e?.message || '',
-        })
+        this.t.instant('HOME.BACKUP.SAVE_FAILED', { message: e?.message || '' })
       );
     } finally {
       this.savingDb = false;
     }
   }
 
+  // clear
   async clearAll() {
     const ok = await this.alerts.confirm(
       this.t.instant('HOME.BACKUP.CONFIRM_CLEAR_DB')
@@ -437,19 +370,16 @@ export class HomeComponent {
 
     this.clearingDb = true;
     try {
-      // On vérifie d’abord que la base est là
       const okBase = await this.ensureBackup();
       if (!okBase) {
         await this.alerts.alert(this.t.instant('HOME.BACKUP.MISSING'));
         return;
       }
 
-      await this.fs.clearFolder(); // vide contenu, ne supprime PAS le dossier
-      // On nettoie uniquement les données de l’app (pas la connexion)
+      await this.fs.clearFolder();
       localStorage.removeItem(this.STORAGE_KEY);
       localStorage.removeItem('client-photos-grid-cols');
 
-      // Reset UI
       this.items.set([]);
       this.selectedDateFilter.set(null);
       this.coverIndex = {};
@@ -458,6 +388,15 @@ export class HomeComponent {
       this.viewerIndex = 0;
       this.viewerTitle = '';
       this.resetDraft();
+
+      // rafraîchir le nom du dossier si possible
+      try {
+        const h = await this.fs.getHandle();
+        if (h) {
+          this.backupFolderName = (h as any).name ?? this.backupFolderName;
+          localStorage.setItem('backup-configured', '1');
+        }
+      } catch {}
 
       await this.alerts.alert(this.t.instant('HOME.BACKUP.CLEARED'));
     } catch (e: any) {
@@ -471,7 +410,23 @@ export class HomeComponent {
     }
   }
 
-  // ====== Date filter actions ======
+  // grid prefs
+  private readGridCols(): number {
+    try {
+      const raw = localStorage.getItem('client-photos-grid-cols');
+      const n = raw ? parseInt(raw, 10) : 2;
+      return [1, 2, 3, 5, 6].includes(n) ? n : 2;
+    } catch {
+      return 2;
+    }
+  }
+  setGridCols(n: number) {
+    if (![1, 2, 3, 5, 6].includes(n)) return;
+    this.gridCols = n;
+    localStorage.setItem('client-photos-grid-cols', String(n));
+  }
+
+  // filtres date
   toggleDateFilter(date: string) {
     this.selectedDateFilter.set(
       this.selectedDateFilter() === date ? null : date
@@ -484,7 +439,7 @@ export class HomeComponent {
     this.selectedDateFilter.set(val?.trim() ? val : null);
   }
 
-  // ====== Export / Import JSON (local) ======
+  // import/export
   exportAll() {
     const payload = {
       kind: 'client-photos.v1',
@@ -511,6 +466,14 @@ export class HomeComponent {
     const file = input.files?.[0];
     if (!file) return;
 
+    const okBase = await this.ensureBackup();
+    if (!okBase) {
+      await this.alerts.alert(this.i18n('HOME.BACKUP.REQUIRED'));
+      if (this.importInput?.nativeElement)
+        this.importInput.nativeElement.value = '';
+      return;
+    }
+
     try {
       const text = await file.text();
       const json = JSON.parse(text);
@@ -533,11 +496,10 @@ export class HomeComponent {
     }
   }
 
-  // ====== Utils ======
+  // utils images
   private resetDraft() {
     this.draft.set({ client: '', location: '', note: '', files: [] });
   }
-
   private loadImage(file: File): Promise<HTMLImageElement> {
     return new Promise((resolve, reject) => {
       const fr = new FileReader();
@@ -592,7 +554,7 @@ export class HomeComponent {
     return await res.blob();
   }
 
-  // ---- DnD ----
+  // DnD
   onDragOver(ev: DragEvent) {
     ev.preventDefault();
     this.isDragging.set(true);
@@ -628,7 +590,7 @@ export class HomeComponent {
     this.mergeFilesIntoDraft(files);
   }
 
-  // ---- Suggestions ----
+  // Suggestions
   openSuggest = signal<{ field: 'client' | 'location' | null }>({
     field: null,
   });
@@ -636,18 +598,10 @@ export class HomeComponent {
     return this.openSuggest().field === field;
   }
   showSuggestions(field: 'client' | 'location') {
-    if (this.hideSuggestTimer) {
-      clearTimeout(this.hideSuggestTimer);
-      this.hideSuggestTimer = undefined;
-    }
     this.openSuggest.set({ field });
   }
   hideSuggestionsSoon() {
-    if (this.hideSuggestTimer) clearTimeout(this.hideSuggestTimer);
-    this.hideSuggestTimer = window.setTimeout(() => {
-      this.openSuggest.set({ field: null });
-      this.hideSuggestTimer = undefined;
-    }, 120);
+    window.setTimeout(() => this.openSuggest.set({ field: null }), 120);
   }
   filterSuggestions(field: 'client' | 'location', query: string): string[] {
     const pool =
@@ -656,11 +610,11 @@ export class HomeComponent {
         : this.suggestions.locations;
     const q = (query || '').toUpperCase().trim();
     if (!q) return pool.slice(0, 8);
-    const starts: string[] = [];
-    const contains: string[] = [];
+    const starts: string[] = [],
+      contains: string[] = [];
     for (let i = 0; i < pool.length; i++) {
-      const v = pool[i];
-      const u = v.toUpperCase();
+      const v = pool[i],
+        u = v.toUpperCase();
       if (u.startsWith(q)) starts.push(v);
       else if (u.includes(q)) contains.push(v);
       if (starts.length + contains.length >= 24) break;
@@ -677,10 +631,10 @@ export class HomeComponent {
 
   // Viewer
   coverIndex: Record<string, number> = {};
-  viewerOpen: boolean = false;
+  viewerOpen = false;
   viewerImages: ImageEntry[] = [];
-  viewerIndex: number = 0;
-  viewerTitle: string = '';
+  viewerIndex = 0;
+  viewerTitle = '';
 
   @HostListener('document:keydown', ['$event'])
   onKey(e: KeyboardEvent) {
