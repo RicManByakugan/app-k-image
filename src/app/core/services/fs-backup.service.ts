@@ -282,6 +282,14 @@ export class FsBackupService {
     return null;
   }
 
+  async forgetConnection(): Promise<void> {
+    await Promise.all([
+      del(HANDLE_KEY),
+      del(MODE_KEY),
+      del(BASENAME_KEY),
+    ]);
+  }
+
   async getRememberedBaseName(): Promise<string | null> {
     const mode = await this.getMode();
     if (!mode) return null;

@@ -81,6 +81,7 @@
       "OPEN_FOLDER": "Open folder",
       "DISCONNECT": "Disconnect folder",
       "DISCONNECTED": "Folder disconnected.",
+      "CONFIRM_DISCONNECT": "Disconnect from the current folder? This will clear the loaded data.",
       "NOT_SUPPORTED": "Your browser cannot select a local folder. Try Chrome/Edge, or an up-to-date browser.",
       "NEEDS_HTTPS": "This feature requires a secure context (HTTPS or localhost).",
       "SAVE": "Save to backup",

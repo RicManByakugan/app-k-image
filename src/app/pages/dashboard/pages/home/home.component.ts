@@ -108,10 +108,13 @@ export class HomeComponent {
     await this.restoreFromDatabase();
   }
 
-  private async restoreFromDatabase(): Promise<boolean> {
+  private async restoreFromDatabase(clearOnFail: boolean = false): Promise<boolean> {
     try {
       const okBase = await this.ensureBackup();
-      if (!okBase) return false;
+      if (!okBase) {
+        if (clearOnFail) this.clearItemsState();
+        return false;
+      }
 
       const packs = await this.fs.getAllItems();
       const hydrated: PhotoItem[] = [];
@@ -148,9 +151,11 @@ export class HomeComponent {
       return true;
     } catch (e) {
       console.warn('restoreFromDatabase failed:', e);
+      if (clearOnFail) this.clearItemsState();
       return false;
     }
   }
+
   private loadImage(fileOrBlob: Blob): Promise<HTMLImageElement> {
     return new Promise((resolve, reject) => {
       const fr = new FileReader();
@@ -284,11 +289,46 @@ export class HomeComponent {
     }
     const handle = await this.fs.pickFolder();
     if (!handle) return;
-    await this.ensureBackup();
+
+    this.backupReady.set(false);
+    this.backupFolderName = null;
+    this.clearItemsState();
+    localStorage.removeItem('backup-configured');
+
+    const restored = await this.restoreFromDatabase(true);
+    if (!restored) {
+      await this.fs.forgetConnection();
+      await this.alerts.alert(this.t.instant('HOME.BACKUP.LOAD_ERR'));
+      return;
+    }
+
     await this.alerts.alert(
       this.t.instant('HOME.BACKUP.SET_OK', { name: this.backupFolderName })
     );
   }
+
+
+  async disconnectBackup() {
+    const confirmed = await this.alerts.confirm(
+      this.t.instant('HOME.BACKUP.CONFIRM_DISCONNECT')
+    );
+    if (!confirmed) return;
+
+    await this.fs.forgetConnection();
+    this.backupReady.set(false);
+    this.backupFolderName = null;
+    localStorage.removeItem('backup-configured');
+    this.clearItemsState();
+
+    await this.alerts.alert(this.t.instant('HOME.BACKUP.DISCONNECTED'));
+
+    if (typeof window !== 'undefined') {
+      try {
+        window.location.reload();
+      } catch {}
+    }
+  }
+
 
   // liste
   async removeItem(id: string) {
@@ -485,14 +525,7 @@ export class HomeComponent {
       localStorage.removeItem(this.STORAGE_KEY);
       localStorage.removeItem('client-photos-grid-cols');
 
-      this.items.set([]);
-      this.selectedDateFilter.set(null);
-      this.coverIndex = {};
-      this.viewerOpen = false;
-      this.viewerImages = [];
-      this.viewerIndex = 0;
-      this.viewerTitle = '';
-      this.resetDraft();
+      this.clearItemsState();
 
       // rafraîchir le nom du dossier si possible
       try {
@@ -547,6 +580,17 @@ export class HomeComponent {
   // utils images
   private resetDraft() {
     this.draft.set({ client: '', location: '', note: '', files: [] });
+  }
+
+  private clearItemsState() {
+    this.items.set([]);
+    this.selectedDateFilter.set(null);
+    this.coverIndex = {};
+    this.viewerOpen = false;
+    this.viewerImages = [];
+    this.viewerIndex = 0;
+    this.viewerTitle = '';
+    this.resetDraft();
   }
 
   private async dataUrlToBlob(dataUrl: string): Promise<Blob> {

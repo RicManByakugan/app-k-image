@@ -81,6 +81,7 @@
       "OPEN_FOLDER": "Ouvrir le dossier",
       "DISCONNECT": "Déconnecter le dossier",
       "DISCONNECTED": "Dossier déconnecté.",
+      "CONFIRM_DISCONNECT": "Déconnecter le dossier sélectionné ? Les données chargées seront effacées.",
       "NOT_SUPPORTED": "Votre navigateur ne permet pas de sélectionner un dossier local. Essayez Chrome/Edge ou un navigateur à jour.",
       "NEEDS_HTTPS": "Cette fonctionnalité nécessite un contexte sécurisé (HTTPS ou localhost).",
       "SAVE": "Sauvegarder dans le dossier",
