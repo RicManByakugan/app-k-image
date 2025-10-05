@@ -55,7 +55,7 @@
       "SAVED": "Saved successfully.",
       "CONFIRM_DELETE": "Delete this item?",
       "IMPORTED": "Data imported successfully.",
-      "IMPORT_FAILED": "Import failed: {{message}}",
+      "IMPORT_FAILED": "Import failed",
       "DRAG_DROP_MSG": "Drag & drop your images here",
       "OR": "or",
       "BROWSE": "Browse…"
@@ -68,9 +68,52 @@
     "LOADING": {
       "ADDING": "Adding…",
       "IMPORTING": "Importing…",
-      "EXPORTING": "Exporting…"
+      "EXPORTING": "Exporting…",
+      "SAVING": "Saving…",
+      "RESTORING": "Restoring…",
+      "CLEARING": "Clearing…"
+    },
+    "BACKUP": {
+      "TITLE": "Backup & Storage",
+      "DIR_LABEL": "Backup folder",
+      "CHOOSE_DIR": "Choose folder",
+      "CURRENT_DIR": "Current folder",
+      "OPEN_FOLDER": "Open folder",
+      "DISCONNECT": "Disconnect folder",
+      "DISCONNECTED": "Folder disconnected.",
+      "CONFIRM_DISCONNECT": "Disconnect from the current folder? This will clear the loaded data.",
+      "NOT_SUPPORTED": "Your browser cannot select a local folder. Try Chrome/Edge, or an up-to-date browser.",
+      "NEEDS_HTTPS": "This feature requires a secure context (HTTPS or localhost).",
+      "SAVE": "Save to backup",
+      "SAVE_OK": "Backup completed.",
+      "SAVE_ERR": "Failed to save to backup",
+      "LOAD": "Load from backup",
+      "LOAD_OK": "Data restored from backup.",
+      "LOAD_ERR": "Failed to load from backup",
+      "CLEAR_DB": "Clear database",
+      "CONFIRM_CLEAR_DB": "Delete all data in the local database? This action cannot be undone.",
+      "CLEAR_DB_OK": "Local database cleared.",
+      "CHOOSE": "Choose",
+      "CLEARED": "Local database cleared.",
+      "SET_OK": "Backup folder set.",
+      "SAVE_DONE": "Save done.",
+      "NO_FOLDER": "No folder selected.",
+      "CLEAR_FAILED": "Failed to clear database",
+      "REQUIRED": "Please choose a backup folder first."
+    },
+    "DB": {
+      "SAVE_TO_DB": "Save to database",
+      "SAVE_OK": "Saved to database.",
+      "SAVE_ERR": "Failed to save to database",
+      "CLEAR_DB": "Clear database",
+      "CLEAR_DB_OK": "Database cleared."
+    },
+    "ERRORS": {
+      "PERMISSION_DENIED": "Permission denied.",
+      "UNKNOWN": "Unexpected error."
     }
   },
+
   "GUIDE": {
     "HERO": {
       "TITLE": "STRIDE - User Guide",
