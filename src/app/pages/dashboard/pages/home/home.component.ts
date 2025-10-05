@@ -4,7 +4,6 @@ import {
   signal,
   computed,
   HostListener,
-  effect,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -13,10 +12,11 @@ import { HeaderComponent } from '../../../../shared/layout/main/header/header.co
 import { FooterComponent } from '../../../../shared/layout/main/footer/footer.component';
 import { AlertService } from '../../../../core/services/alert.service';
 import { customer, location } from '../../../../core/const/suggestion';
+import { PhotoCloudService } from '../../../../core/services/photo-cloud.service';
 
 type ImageEntry = {
   id: string;
-  dataUrl: string; // on stocke une image redimensionnée (1280px)
+  dataUrl: string; // https public URL from Supabase
   mime: string;
   name: string;
 };
@@ -53,11 +53,12 @@ type Draft = {
 export class HomeComponent {
   private t = inject(TranslateService);
   private alerts = inject(AlertService);
+  private cloud = inject(PhotoCloudService);
 
   actionLoading = false;
   clearingAll = false;
 
-  // Grille : on mémorise en localStorage
+  // UI prefs: keep grid value locally (not app data)
   gridCols: number = this.readGridCols();
   get isGallery(): boolean {
     return this.gridCols >= 5;
@@ -66,9 +67,7 @@ export class HomeComponent {
   isDragging = signal(false);
   isAddOpen = signal(false);
 
-  // Stockage local (clé unique)
-  private readonly STORAGE_KEY = 'client-photos-v1';
-
+  // Cloud data only
   items = signal<PhotoItem[]>([]);
   selectedDateFilter = signal<string | null>(null);
 
@@ -76,15 +75,23 @@ export class HomeComponent {
   draft = signal<Draft>({ client: '', location: '', note: '', files: [] });
 
   constructor() {
-    // Restaure depuis localStorage
-    const local = this.readAll();
-    if (local.length) this.items.set(local);
-
-    // Persiste automatiquement les items au moindre changement
-    effect(() => this.writeAll(this.items()));
+    // Initial fetch from cloud
+    this.refreshFromCloud();
   }
 
-  // ----- Helpers d'image -----
+  private async refreshFromCloud() {
+    try {
+      const remote = await this.cloud.listPhotos();
+      this.items.set(remote);
+    } catch (e) {
+      console.warn('Cloud load failed:', e);
+      await this.alerts.alert(
+        this.t.instant('HOME.BACKUP.LOAD_ERR') || 'Load failed'
+      );
+    }
+  }
+
+  // ----- Image helpers -----
   private loadImage(fileOrBlob: Blob): Promise<HTMLImageElement> {
     return new Promise((resolve, reject) => {
       const fr = new FileReader();
@@ -118,8 +125,12 @@ export class HomeComponent {
     ctx.drawImage(img, 0, 0, w, h);
     return canvas.toDataURL('image/jpeg', quality);
   }
+  private async dataUrlToBlob(dataUrl: string): Promise<Blob> {
+    const res = await fetch(dataUrl);
+    return await res.blob();
+  }
 
-  // ----- Dates / Groupes -----
+  // ----- Dates / groups -----
   private toISODateLocal(ts: number) {
     const d = new Date(ts);
     const pad = (n: number) => String(n).padStart(2, '0');
@@ -151,25 +162,7 @@ export class HomeComponent {
     return this.groups().filter((g) => g.date === f);
   });
 
-  // ----- localStorage -----
-  private readAll(): PhotoItem[] {
-    try {
-      const raw = localStorage.getItem(this.STORAGE_KEY);
-      const arr = raw ? (JSON.parse(raw) as PhotoItem[]) : [];
-      return Array.isArray(arr) ? arr : [];
-    } catch {
-      return [];
-    }
-  }
-  private writeAll(items: PhotoItem[]) {
-    if (!items || items.length === 0) {
-      localStorage.removeItem(this.STORAGE_KEY);
-      return;
-    }
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(items));
-  }
-
-  // ----- UI: Grille -----
+  // ----- UI prefs (grid only) -----
   private readGridCols(): number {
     try {
       const raw = localStorage.getItem('client-photos-grid-cols');
@@ -185,7 +178,7 @@ export class HomeComponent {
     localStorage.setItem('client-photos-grid-cols', String(n));
   }
 
-  // ----- Filtres date -----
+  // ----- Date filters -----
   toggleDateFilter(date: string) {
     this.selectedDateFilter.set(
       this.selectedDateFilter() === date ? null : date
@@ -198,7 +191,7 @@ export class HomeComponent {
     this.selectedDateFilter.set(val?.trim() ? val : null);
   }
 
-  // ----- Draft (form ajout) -----
+  // ----- Draft / modal -----
   openAddModal() {
     this.resetDraft();
     this.isAddOpen.set(true);
@@ -219,12 +212,11 @@ export class HomeComponent {
   getFilePreview(file: File): string {
     return URL.createObjectURL(file);
   }
-
   private resetDraft() {
     this.draft.set({ client: '', location: '', note: '', files: [] });
   }
 
-  // ----- Ajout -----
+  // ----- Submit (cloud only) -----
   async submit() {
     const d = this.draft();
 
@@ -241,36 +233,42 @@ export class HomeComponent {
 
     this.actionLoading = true;
     try {
-      // On stocke une version 1280px (confort en viewer)
-      const imagesForApp: ImageEntry[] = [];
+      // Prepare resized images (upload the resized version)
+      const imagesForMeta: { id: string; name: string; mime: string }[] = [];
+      const blobsById: Record<string, Blob> = {};
+
       for (const f of d.files) {
         const dataUrl = await this.resizeToDataURL(f, 1280, 0.8);
         const id = crypto.randomUUID();
-        imagesForApp.push({
+        imagesForMeta.push({
           id,
-          dataUrl,
-          mime: 'image/jpeg',
           name: f.name || 'image.jpg',
+          mime: 'image/jpeg',
         });
+        blobsById[id] = await this.dataUrlToBlob(dataUrl);
       }
 
       const now = Date.now();
-      const itemForApp: PhotoItem = {
+      const meta = {
         id: crypto.randomUUID(),
         client: d.client.trim(),
         location: d.location.trim(),
         note: d.note?.trim() ?? '',
         createdAt: now,
-        images: imagesForApp,
+        images: imagesForMeta,
       };
 
-      // MAJ UI + persistance automatique via effect()
-      this.items.update((arr) => [itemForApp, ...arr]);
+      // Save to cloud first (source of truth)
+      await this.cloud.upsertPhoto(meta, blobsById);
+
+      // Refresh UI from cloud to get public URLs
+      await this.refreshFromCloud();
+
       this.resetDraft();
       this.isAddOpen.set(false);
-
       await this.alerts.alert(this.t.instant('HOME.PHOTOS.SAVED'));
     } catch (e: any) {
+      console.error(e);
       await this.alerts.alert(
         this.t.instant('HOME.PHOTOS.SAVE_FAILED', { message: e?.message || '' })
       );
@@ -279,39 +277,41 @@ export class HomeComponent {
     }
   }
 
-  // ----- Suppression item -----
+  // ----- Delete (cloud only) -----
   async removeItem(id: string) {
     const ok = await this.alerts.confirm(
       this.t.instant('HOME.PHOTOS.CONFIRM_DELETE')
     );
     if (!ok) return;
 
-    this.items.update((arr) => arr.filter((x) => x.id !== id));
-    delete this.coverIndex[id];
+    const toRemove = this.items().find((x) => x.id === id);
+    if (!toRemove) return;
 
-    if (
-      this.viewerOpen &&
-      this.viewerImages.length &&
-      this.items().every((x) => x.id !== id)
-    ) {
-      this.closeViewer();
+    try {
+      await this.cloud.deletePhoto(
+        toRemove.id,
+        toRemove.images.map((i) => ({ id: i.id, mime: i.mime }))
+      );
+      await this.refreshFromCloud();
+
+      if (this.viewerOpen) this.closeViewer();
+    } catch (e) {
+      console.warn('Cloud delete failed:', e);
     }
   }
 
-  // ----- Vider tout (localStorage + état mémoire) -----
+  // ----- Clear-all (cloud only) -----
   async clearAll() {
     const ok = await this.alerts.confirm(
-      this.t.instant('HOME.BACKUP.CONFIRM_CLEAR_DB') // réutilise le texte existant
+      this.t.instant('HOME.BACKUP.CONFIRM_CLEAR_DB')
     );
     if (!ok) return;
 
     this.clearingAll = true;
     try {
-      localStorage.removeItem(this.STORAGE_KEY);
-      // si tu veux aussi remettre la grille par défaut, décommente :
-      // localStorage.removeItem('client-photos-grid-cols');
-
+      await this.cloud.clearAll();
       this.items.set([]);
+
       this.selectedDateFilter.set(null);
       this.coverIndex = {};
       this.viewerOpen = false;
