@@ -3,8 +3,10 @@
 
   <main class="relative z-auto flex-1">
     <div class="px-3 py-4 mx-auto space-y-4 max-w-6xl md:px-6">
-      <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-3 md:p-4 space-y-3">
-        <!-- Titre + bouton Ajouter -->
+      <div
+        class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-3 md:p-4 space-y-3"
+      >
+        <!-- Title + Add -->
         <div class="flex items-center justify-between gap-2">
           <div class="min-w-0">
             <h1 class="text-lg font-semibold md:text-xl truncate">
@@ -12,7 +14,8 @@
             </h1>
             <div class="text-xs text-gray-600 dark:text-gray-400">
               {{ "HOME.PHOTOS.DATE" | translate }}:
-              <span class="font-medium">{{ todayISO }}</span> ({{ "HOME.TODAY" | translate }})
+              <span class="font-medium">{{ todayISO }}</span>
+              ({{ "HOME.TODAY" | translate }})
             </div>
           </div>
 
@@ -26,27 +29,101 @@
           </div>
         </div>
 
-        <!-- Barre d'outils locale (Grid + Clear) -->
+        <!-- Toolbar (grid + clear) -->
         <div class="flex items-center gap-2 overflow-x-auto -mx-1 px-1">
           <!-- Desktop / Tablet -->
-          <div class="hidden sm:flex w-full justify-between overflow-x-auto px-1">
+          <div
+            class="hidden sm:flex w-full justify-between overflow-x-auto px-1"
+          >
             <!-- Grid toggle -->
-            <div class="shrink-0 inline-flex rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden">
-              <button class="h-10 px-3 text-sm border-r border-gray-300 dark:border-gray-700"
-                      [ngClass]="gridCols === 1 ? ['bg-indigo-600','text-white'] : ['bg-white','text-gray-800','dark:bg-gray-900','dark:text-gray-100']"
-                      (click)="setGridCols(1)" type="button">1</button>
-              <button class="h-10 px-3 text-sm border-r border-gray-300 dark:border-gray-700"
-                      [ngClass]="gridCols === 2 ? ['bg-indigo-600','text-white'] : ['bg-white','text-gray-800','dark:bg-gray-900','dark:text-gray-100']"
-                      (click)="setGridCols(2)" type="button">2</button>
-              <button class="h-10 px-3 text-sm border-r border-gray-300 dark:border-gray-700"
-                      [ngClass]="gridCols === 3 ? ['bg-indigo-600','text-white'] : ['bg-white','text-gray-800','dark:bg-gray-900','dark:text-gray-100']"
-                      (click)="setGridCols(3)" type="button">3</button>
-              <button class="h-10 px-3 text-sm border-r border-gray-300 dark:border-gray-700"
-                      [ngClass]="gridCols === 5 ? ['bg-indigo-600','text-white'] : ['bg-white','text-gray-800','dark:bg-gray-900','dark:text-gray-100']"
-                      (click)="setGridCols(5)" type="button">5</button>
-              <button class="h-10 px-3 text-sm"
-                      [ngClass]="gridCols === 6 ? ['bg-indigo-600','text-white'] : ['bg-white','text-gray-800','dark:bg-gray-900','dark:text-gray-100']"
-                      (click)="setGridCols(6)" type="button">6</button>
+            <div
+              class="shrink-0 inline-flex rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden"
+            >
+              <button
+                class="h-10 px-3 text-sm border-r border-gray-300 dark:border-gray-700"
+                [ngClass]="
+                  gridCols === 1
+                    ? ['bg-indigo-600', 'text-white']
+                    : [
+                        'bg-white',
+                        'text-gray-800',
+                        'dark:bg-gray-900',
+                        'dark:text-gray-100'
+                      ]
+                "
+                (click)="setGridCols(1)"
+                type="button"
+              >
+                1
+              </button>
+              <button
+                class="h-10 px-3 text-sm border-r border-gray-300 dark:border-gray-700"
+                [ngClass]="
+                  gridCols === 2
+                    ? ['bg-indigo-600', 'text-white']
+                    : [
+                        'bg-white',
+                        'text-gray-800',
+                        'dark:bg-gray-900',
+                        'dark:text-gray-100'
+                      ]
+                "
+                (click)="setGridCols(2)"
+                type="button"
+              >
+                2
+              </button>
+              <button
+                class="h-10 px-3 text-sm border-r border-gray-300 dark:border-gray-700"
+                [ngClass]="
+                  gridCols === 3
+                    ? ['bg-indigo-600', 'text-white']
+                    : [
+                        'bg-white',
+                        'text-gray-800',
+                        'dark:bg-gray-900',
+                        'dark:text-gray-100'
+                      ]
+                "
+                (click)="setGridCols(3)"
+                type="button"
+              >
+                3
+              </button>
+              <button
+                class="h-10 px-3 text-sm border-r border-gray-300 dark:border-gray-700"
+                [ngClass]="
+                  gridCols === 5
+                    ? ['bg-indigo-600', 'text-white']
+                    : [
+                        'bg-white',
+                        'text-gray-800',
+                        'dark:bg-gray-900',
+                        'dark:text-gray-100'
+                      ]
+                "
+                (click)="setGridCols(5)"
+                type="button"
+              >
+                5
+              </button>
+              <button
+                class="h-10 px-3 text-sm"
+                [ngClass]="
+                  gridCols === 6
+                    ? ['bg-indigo-600', 'text-white']
+                    : [
+                        'bg-white',
+                        'text-gray-800',
+                        'dark:bg-gray-900',
+                        'dark:text-gray-100'
+                      ]
+                "
+                (click)="setGridCols(6)"
+                type="button"
+              >
+                6
+              </button>
             </div>
 
             <!-- Actions -->
@@ -54,7 +131,7 @@
               <button
                 (click)="clearAll()"
                 class="h-10 px-3 text-sm text-red-600 bg-white border border-red-300 rounded-lg hover:bg-red-50 dark:bg-gray-900 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/20 inline-flex items-center gap-2 disabled:opacity-60"
-                [disabled]="clearingAll || loadingItems()"
+                [disabled]="clearingAll || loadingList()"
               >
                 <i *ngIf="!clearingAll" class="fas fa-trash"></i>
                 <i *ngIf="clearingAll" class="fas fa-spinner fa-spin"></i>
@@ -67,22 +144,94 @@
           <div class="sm:hidden px-1 w-full flex justify-between">
             <!-- Compact grid toggle -->
             <div class="flex items-center gap-1">
-              <div class="inline-flex rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden">
-                <button class="h-9 px-2 text-xs border-r border-gray-300 dark:border-gray-700"
-                        [ngClass]="gridCols === 1 ? ['bg-indigo-600','text-white'] : ['bg-white','text-gray-800','dark:bg-gray-900','dark:text-gray-100']"
-                        (click)="setGridCols(1)" type="button">1</button>
-                <button class="h-9 px-2 text-xs border-r border-gray-300 dark:border-gray-700"
-                        [ngClass]="gridCols === 2 ? ['bg-indigo-600','text-white'] : ['bg-white','text-gray-800','dark:bg-gray-900','dark:text-gray-100']"
-                        (click)="setGridCols(2)" type="button">2</button>
-                <button class="h-9 px-2 text-xs border-r border-gray-300 dark:border-gray-700"
-                        [ngClass]="gridCols === 3 ? ['bg-indigo-600','text-white'] : ['bg-white','text-gray-800','dark:bg-gray-900','dark:text-gray-100']"
-                        (click)="setGridCols(3)" type="button">3</button>
-                <button class="h-9 px-2 text-xs border-r border-gray-300 dark:border-gray-700"
-                        [ngClass]="gridCols === 5 ? ['bg-indigo-600','text-white'] : ['bg-white','text-gray-800','dark:bg-gray-900','dark:text-gray-100']"
-                        (click)="setGridCols(5)" type="button">5</button>
-                <button class="h-9 px-2 text-xs"
-                        [ngClass]="gridCols === 6 ? ['bg-indigo-600','text-white'] : ['bg-white','text-gray-800','dark:bg-gray-900','dark:text-gray-100']"
-                        (click)="setGridCols(6)" type="button">6</button>
+              <div
+                class="inline-flex rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden"
+              >
+                <button
+                  class="h-9 px-2 text-xs border-r border-gray-300 dark:border-gray-700"
+                  [ngClass]="
+                    gridCols === 1
+                      ? ['bg-indigo-600', 'text-white']
+                      : [
+                          'bg-white',
+                          'text-gray-800',
+                          'dark:bg-gray-900',
+                          'dark:text-gray-100'
+                        ]
+                  "
+                  (click)="setGridCols(1)"
+                  type="button"
+                >
+                  1
+                </button>
+                <button
+                  class="h-9 px-2 text-xs border-r border-gray-300 dark:border-gray-700"
+                  [ngClass]="
+                    gridCols === 2
+                      ? ['bg-indigo-600', 'text-white']
+                      : [
+                          'bg-white',
+                          'text-gray-800',
+                          'dark:bg-gray-900',
+                          'dark:text-gray-100'
+                        ]
+                  "
+                  (click)="setGridCols(2)"
+                  type="button"
+                >
+                  2
+                </button>
+                <button
+                  class="h-9 px-2 text-xs border-r border-gray-300 dark:border-gray-700"
+                  [ngClass]="
+                    gridCols === 3
+                      ? ['bg-indigo-600', 'text-white']
+                      : [
+                          'bg-white',
+                          'text-gray-800',
+                          'dark:bg-gray-900',
+                          'dark:text-gray-100'
+                        ]
+                  "
+                  (click)="setGridCols(3)"
+                  type="button"
+                >
+                  3
+                </button>
+                <button
+                  class="h-9 px-2 text-xs border-r border-gray-300 dark:border-gray-700"
+                  [ngClass]="
+                    gridCols === 5
+                      ? ['bg-indigo-600', 'text-white']
+                      : [
+                          'bg-white',
+                          'text-gray-800',
+                          'dark:bg-gray-900',
+                          'dark:text-gray-100'
+                        ]
+                  "
+                  (click)="setGridCols(5)"
+                  type="button"
+                >
+                  5
+                </button>
+                <button
+                  class="h-9 px-2 text-xs"
+                  [ngClass]="
+                    gridCols === 6
+                      ? ['bg-indigo-600', 'text-white']
+                      : [
+                          'bg-white',
+                          'text-gray-800',
+                          'dark:bg-gray-900',
+                          'dark:text-gray-100'
+                        ]
+                  "
+                  (click)="setGridCols(6)"
+                  type="button"
+                >
+                  6
+                </button>
               </div>
             </div>
 
@@ -91,7 +240,7 @@
               <button
                 (click)="clearAll()"
                 class="h-9 px-2 text-xs text-red-600 bg-white border border-red-300 rounded-lg hover:bg-red-50 dark:bg-gray-900 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/20 inline-flex items-center justify-center gap-1 disabled:opacity-60"
-                [disabled]="clearingAll || loadingItems()"
+                [disabled]="clearingAll || loadingList()"
               >
                 <i *ngIf="!clearingAll" class="fas fa-trash"></i>
                 <i *ngIf="clearingAll" class="fas fa-spinner fa-spin"></i>
@@ -102,13 +251,16 @@
         </div>
       </div>
 
-      <!-- SIMPLE CLOUD LOADER -->
-      <div *ngIf="loadingItems()" class="p-6 text-sm text-center text-gray-600 dark:text-gray-300 border border-dashed rounded-xl dark:border-gray-800">
+      <!-- Loader while fetching from Supabase -->
+      <div
+        *ngIf="loadingList()"
+        class="p-6 text-sm text-center text-gray-600 dark:text-gray-300 border border-dashed rounded-xl dark:border-gray-800"
+      >
         <i class="fas fa-spinner fa-spin mr-2"></i>
       </div>
 
-      <!-- Liste groupée par date -->
-      <section class="space-y-6">
+      <!-- List grouped by date -->
+      <section class="space-y-6" *ngIf="!loadingList()">
         <ng-container *ngFor="let g of filteredGroups()">
           <div class="flex items-center justify-between">
             <h2 class="text-base font-semibold">{{ g.date }}</h2>
@@ -117,69 +269,142 @@
             </div>
           </div>
 
-          <div class="grid gap-3"
-               [ngClass]="{
-                 'grid-cols-1': gridCols === 1,
-                 'grid-cols-2': gridCols === 2,
-                 'grid-cols-3': gridCols === 3,
-                 'grid-cols-5': gridCols === 5,
-                 'grid-cols-6': gridCols === 6
-               }">
-            <article *ngFor="let it of g.items"
-              class="overflow-hidden border rounded-2xl bg-white dark:bg-gray-950 dark:border-gray-800">
-              <!-- MODE GALERIE (≥5 colonnes) -->
+          <div
+            class="grid gap-3"
+            [ngClass]="{
+              'grid-cols-1': gridCols === 1,
+              'grid-cols-2': gridCols === 2,
+              'grid-cols-3': gridCols === 3,
+              'grid-cols-5': gridCols === 5,
+              'grid-cols-6': gridCols === 6
+            }"
+          >
+            <article
+              *ngFor="let it of g.items"
+              class="relative overflow-hidden border rounded-2xl bg-white dark:bg-gray-950 dark:border-gray-800"
+            >
+              <!-- per-item deleting overlay -->
+              <div
+                *ngIf="isDeleting(it.id)"
+                class="absolute inset-0 z-10 bg-white/60 dark:bg-black/40 backdrop-blur-sm flex items-center justify-center"
+              >
+                <i class="fas fa-spinner fa-spin text-lg"></i>
+              </div>
+
+              <!-- GALLERY MODE (≥5 cols) -->
               <ng-container *ngIf="isGallery; else normalCard">
-                <div class="relative cursor-zoom-in" (click)="openViewer(it, 0)">
+                <div
+                  class="relative cursor-zoom-in"
+                  (click)="openViewer(it, 0)"
+                >
                   <div class="relative aspect-square overflow-hidden">
-                    <img *ngIf="coverOf(it) as cover" [src]="cover.dataUrl"
-                         class="absolute inset-0 w-full h-full object-cover transition-transform duration-200 will-change-transform hover:scale-[1.02]"
-                         alt="cover" />
+                    <img
+                      *ngIf="coverOf(it) as cover"
+                      [src]="cover.dataUrl"
+                      class="absolute inset-0 w-full h-full object-cover transition-transform duration-200 will-change-transform hover:scale-[1.02]"
+                      alt="cover"
+                    />
                   </div>
-                  <div class="absolute inset-x-0 bottom-0 p-1.5 bg-black/45 text-white">
+                  <div
+                    class="absolute inset-x-0 bottom-0 p-1.5 bg-black/45 text-white"
+                  >
                     <div class="text-[11px] font-medium truncate">
                       {{ it.client || ("HOME.PHOTOS.UNTITLED" | translate) }}
                     </div>
                   </div>
-                  <button type="button" (click)="$event.stopPropagation(); removeItem(it.id)"
-                          class="absolute top-1.5 right-1.5 h-7 w-7 rounded-full bg-white/90 dark:bg-gray-900/90 border border-gray-200 dark:border-gray-700 shadow text-[12px] leading-none hover:scale-105">×</button>
+                  <button
+                    type="button"
+                    (click)="$event.stopPropagation(); removeItem(it.id)"
+                    class="absolute top-1.5 right-1.5 h-7 w-7 rounded-full bg-white/90 dark:bg-gray-900/90 border border-gray-200 dark:border-gray-700 shadow text-[12px] leading-none hover:scale-105 disabled:opacity-60"
+                    [disabled]="isDeleting(it.id)"
+                  >
+                    <i
+                      *ngIf="!isDeleting(it.id); else delSpin"
+                      class="fas fa-times"
+                    ></i>
+                    <ng-template #delSpin>
+                      <i class="fas fa-spinner fa-spin"></i>
+                    </ng-template>
+                  </button>
                 </div>
-                <div class="px-2 py-1.5 text-[11px] text-gray-500 dark:text-gray-400 flex items-center justify-between">
-                  <span>{{ it.images.length }} {{ "HOME.PHOTOS.IMAGES" | translate }}</span>
+                <div
+                  class="px-2 py-1.5 text-[11px] text-gray-500 dark:text-gray-400 flex items-center justify-between"
+                >
+                  <span
+                    >{{ it.images.length }}
+                    {{ "HOME.PHOTOS.IMAGES" | translate }}</span
+                  >
                   <span>{{ it.createdAt | date : "yyyy-MM-dd" }}</span>
                 </div>
               </ng-container>
 
-              <!-- MODE NORMAL -->
+              <!-- NORMAL CARD -->
               <ng-template #normalCard>
-                <img *ngIf="coverOf(it) as cover" [src]="cover.dataUrl"
-                     class="block object-cover w-full h-48 cursor-zoom-in"
-                     alt="cover" (click)="openViewer(it, 0)"/>
+                <img
+                  *ngIf="coverOf(it) as cover"
+                  [src]="cover.dataUrl"
+                  class="block object-cover w-full h-48 cursor-zoom-in"
+                  alt="cover"
+                  (click)="openViewer(it, 0)"
+                />
                 <div class="p-3 space-y-2">
                   <div class="flex items-start justify-between gap-2">
                     <div class="min-w-0">
-                      <div class="text-base font-semibold truncate dark:text-gray-100">{{ it.client }}</div>
-                      <div *ngIf="it.location" class="text-xs text-gray-500 truncate dark:text-gray-400">{{ it.location }}</div>
+                      <div
+                        class="text-base font-semibold truncate dark:text-gray-100"
+                      >
+                        {{ it.client }}
+                      </div>
+                      <div
+                        *ngIf="it.location"
+                        class="text-xs text-gray-500 truncate dark:text-gray-400"
+                      >
+                        {{ it.location }}
+                      </div>
                     </div>
-                    <button (click)="removeItem(it.id)"
-                            class="h-8 px-2 text-sm text-red-600 rounded-md hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-900/20">
-                      {{ "HOME.DELETE" | translate }}
+                    <button
+                      (click)="removeItem(it.id)"
+                      class="h-8 px-2 text-sm text-red-600 rounded-md hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-900/20 inline-flex items-center gap-2 disabled:opacity-60"
+                      [disabled]="isDeleting(it.id)"
+                    >
+                      <i
+                        *ngIf="!isDeleting(it.id); else delSpin2"
+                        class="fas fa-trash"
+                      ></i>
+                      <ng-template #delSpin2>
+                        <i class="fas fa-spinner fa-spin"></i>
+                      </ng-template>
+                      <span class="hidden sm:inline">
+                        {{ "HOME.DELETE" | translate }}
+                      </span>
                     </button>
                   </div>
 
-                  <p *ngIf="it.note" class="text-sm text-gray-700 line-clamp-3 dark:text-gray-300">{{ it.note }}</p>
+                  <p
+                    *ngIf="it.note"
+                    class="text-sm text-gray-700 line-clamp-3 dark:text-gray-300"
+                  >
+                    {{ it.note }}
+                  </p>
 
                   <div class="flex -space-x-2">
-                    <img *ngFor="let img of it.images; let i = index"
-                         [src]="img.dataUrl" alt="thumb" (click)="openViewer(it, i)"
-                         class="inline-block w-9 h-9 rounded-lg ring-2 object-cover cursor-pointer transition"
-                         [ngClass]="{
-                           'ring-indigo-500': i === 0,
-                           'ring-white dark:ring-gray-900 opacity-80 hover:opacity-100': i !== 0
-                         }" />
+                    <img
+                      *ngFor="let img of it.images; let i = index"
+                      [src]="img.dataUrl"
+                      alt="thumb"
+                      (click)="openViewer(it, i)"
+                      class="inline-block w-9 h-9 rounded-lg ring-2 object-cover cursor-pointer transition"
+                      [ngClass]="{
+                        'ring-indigo-500': i === 0,
+                        'ring-white dark:ring-gray-900 opacity-80 hover:opacity-100':
+                          i !== 0
+                      }"
+                    />
                   </div>
 
                   <div class="text-[11px] text-gray-500 dark:text-gray-400">
-                    {{ it.images.length }} {{ "HOME.PHOTOS.IMAGES" | translate }} •
+                    {{ it.images.length }}
+                    {{ "HOME.PHOTOS.IMAGES" | translate }} •
                     {{ it.createdAt | date : "yyyy-MM-dd HH:mm" }}
                   </div>
                 </div>
@@ -188,32 +413,269 @@
           </div>
         </ng-container>
 
-        <!-- Empty state only when NOT loading -->
-        <div *ngIf="!loadingItems() && groups().length === 0"
-             class="p-6 text-sm text-center text-gray-500 border border-dashed rounded-xl dark:text-gray-400 dark:border-gray-800">
+        <div
+          *ngIf="groups().length === 0"
+          class="p-6 text-sm text-center text-gray-500 border border-dashed rounded-xl dark:text-gray-400 dark:border-gray-800"
+        >
           {{ "HOME.PHOTOS.EMPTY" | translate }}
         </div>
       </section>
     </div>
   </main>
 
-  <!-- Viewer (unchanged) -->
+  <!-- Add Photo Modal (restored) -->
+  <div *ngIf="isAddOpen()" class="fixed inset-0 z-[9999]">
+    <div class="absolute inset-0 bg-black/50" (click)="closeAddModal()"></div>
+
+    <div
+      class="absolute inset-0 flex items-end sm:items-center justify-center p-3 sm:p-6"
+    >
+      <div
+        class="w-full max-w-3xl rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex flex-col max-h-[90vh] overflow-hidden"
+      >
+        <div
+          class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800 sticky top-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur supports-[backdrop-filter]:backdrop-blur z-10"
+        >
+          <div class="text-base font-semibold dark:text-gray-100">
+            {{ "HOME.PHOTOS.ADD_TITLE" | translate }}
+          </div>
+          <button
+            class="h-9 px-3 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"
+            (click)="closeAddModal()"
+          >
+            {{ "HOME.CLOSE" | translate }}
+          </button>
+        </div>
+
+        <div class="p-4 space-y-4 overflow-y-auto flex-1 scrollbar">
+          <!-- Client -->
+          <div class="space-y-1">
+            <label class="text-sm dark:text-gray-200">{{
+              "HOME.PHOTOS.CLIENT" | translate
+            }}</label>
+            <div class="relative">
+              <input
+                type="text"
+                [ngModel]="draft().client"
+                (ngModelChange)="onDraftChange('client', $event)"
+                (focus)="showSuggestions('client')"
+                (click)="showSuggestions('client')"
+                (blur)="hideSuggestionsSoon()"
+                class="w-full h-10 px-3 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-gray-950 dark:text-gray-100 dark:border-gray-700 placeholder-gray-400 dark:placeholder-gray-500"
+                [placeholder]="'HOME.PHOTOS.CLIENT' | translate"
+              />
+              <ng-container *ngIf="isSuggestOpen('client')">
+                <ng-container
+                  *ngIf="filterSuggestions('client', draft().client) as list"
+                >
+                  <div
+                    *ngIf="list.length"
+                    class="absolute left-0 right-0 z-50 mt-1 overflow-auto bg-white border border-gray-200 rounded-lg shadow-lg top-full max-h-60 dark:bg-gray-900 dark:border-gray-800 scrollbar"
+                  >
+                    <button
+                      *ngFor="let s of list"
+                      type="button"
+                      (mousedown)="$event.preventDefault()"
+                      (click)="pickSuggestion('client', s)"
+                      class="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-800 dark:text-gray-100"
+                    >
+                      {{ s }}
+                    </button>
+                  </div>
+                </ng-container>
+              </ng-container>
+            </div>
+          </div>
+
+          <!-- Location -->
+          <div class="space-y-1">
+            <label class="text-sm dark:text-gray-200">{{
+              "HOME.PHOTOS.LOCATION" | translate
+            }}</label>
+            <div class="relative">
+              <input
+                type="text"
+                [ngModel]="draft().location"
+                (ngModelChange)="onDraftChange('location', $event)"
+                (focus)="showSuggestions('location')"
+                (click)="showSuggestions('location')"
+                (blur)="hideSuggestionsSoon()"
+                class="w-full h-10 px-3 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-gray-950 dark:text-gray-100 dark:border-gray-700 placeholder-gray-400 dark:placeholder-gray-500"
+                [placeholder]="'HOME.PHOTOS.LOCATION' | translate"
+              />
+              <ng-container *ngIf="isSuggestOpen('location')">
+                <ng-container
+                  *ngIf="
+                    filterSuggestions('location', draft().location) as list
+                  "
+                >
+                  <div
+                    *ngIf="list.length"
+                    class="absolute left-0 right-0 z-50 mt-1 overflow-auto bg-white border border-gray-200 rounded-lg shadow-lg top-full max-h-60 dark:bg-gray-900 dark:border-gray-800 scrollbar"
+                  >
+                    <button
+                      *ngFor="let s of list"
+                      type="button"
+                      (mousedown)="$event.preventDefault()"
+                      (click)="pickSuggestion('location', s)"
+                      class="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-800 dark:text-gray-100"
+                    >
+                      {{ s }}
+                    </button>
+                  </div>
+                </ng-container>
+              </ng-container>
+            </div>
+          </div>
+
+          <!-- Note -->
+          <div class="space-y-1">
+            <label class="text-sm dark:text-gray-200">{{
+              "HOME.PHOTOS.NOTE" | translate
+            }}</label>
+            <textarea
+              rows="3"
+              [ngModel]="draft().note"
+              (ngModelChange)="onDraftChange('note', $event)"
+              class="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-gray-950 dark:text-gray-100 dark:border-gray-700 placeholder-gray-400 dark:placeholder-gray-500"
+            ></textarea>
+          </div>
+
+          <!-- Drag & Drop -->
+          <div class="space-y-2">
+            <label class="text-sm dark:text-gray-200">{{
+              "HOME.PHOTOS.IMAGES_INPUT" | translate
+            }}</label>
+
+            <div
+              class="relative flex flex-col items-center justify-center w-full p-6 text-center transition border-2 border-dashed rounded-xl bg-white/70 dark:bg-gray-900/60"
+              [ngClass]="{
+                'border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800':
+                  !isDragging(),
+                'border-indigo-500 ring-2 ring-indigo-500/50 bg-indigo-50/60 dark:bg-indigo-900/20':
+                  isDragging()
+              }"
+              (dragover)="onDragOver($event)"
+              (dragleave)="onDragLeave($event)"
+              (drop)="onDropFiles($event)"
+            >
+              <i
+                class="fas fa-upload text-gray-500 dark:text-gray-300 text-4xl opacity-80"
+              ></i>
+
+              <p class="mt-2 text-sm text-gray-700 dark:text-gray-200">
+                {{ "HOME.PHOTOS.DND_HINT" | translate }}
+              </p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                {{ "HOME.OR" | translate }}
+              </p>
+              <label
+                class="mt-2 inline-flex items-center h-9 px-3 text-sm font-medium text-white rounded-lg cursor-pointer bg-indigo-600 hover:bg-indigo-700"
+              >
+                {{ "HOME.BROWSE" | translate }}
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  class="hidden"
+                  (change)="onPickFiles($event)"
+                />
+              </label>
+            </div>
+
+            <!-- Previews -->
+            <div class="mt-3">
+              <div
+                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[45vh] overflow-y-auto pr-1 scrollbar"
+              >
+                <div
+                  *ngFor="let f of draft().files; let i = index"
+                  class="relative overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800 aspect-square"
+                >
+                  <img
+                    [src]="getFilePreview(f)"
+                    alt="preview"
+                    loading="lazy"
+                    class="object-cover w-full h-full"
+                  />
+                  <button
+                    type="button"
+                    (click)="removeDraftFile(i)"
+                    class="absolute top-1 right-1 bg-white/90 dark:bg-gray-900/90 border border-gray-300 dark:border-gray-700 rounded-md px-1.5 text-[12px] leading-none dark:text-gray-100"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+              <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                {{ draft().files.length }}
+                {{ "HOME.PHOTOS.IMAGES" | translate }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="flex items-center justify-end gap-2 px-4 py-3 border-t border-gray-200 dark:border-gray-800 sticky bottom-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur supports-[backdrop-filter]:backdrop-blur z-10"
+        >
+          <button
+            class="h-9 px-3 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:hover:bg-gray-800"
+            (click)="closeAddModal()"
+          >
+            {{ "HOME.CANCEL" | translate }}
+          </button>
+          <button
+            class="h-9 px-3 text-sm text-white rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 disabled:cursor-not-allowed inline-flex items-center gap-2"
+            (click)="submit()"
+            [disabled]="actionLoading"
+          >
+            <i *ngIf="actionLoading" class="fas fa-spinner fa-spin"></i>
+            {{ "HOME.SAVE" | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fullscreen viewer -->
   <div *ngIf="viewerOpen" class="fixed inset-0 z-[9999]">
     <div class="absolute inset-0 bg-black/80" (click)="closeViewer()"></div>
+
     <div class="absolute inset-0 flex items-center justify-center p-3">
       <div class="relative w-full max-w-6xl">
-        <button type="button" class="z-[9999] absolute -top-2 right-0 md:-top-6 md:-right-6 h-10 w-10 rounded-full bg-white/90 dark:bg-gray-900/90 border border-gray-200 dark:border-gray-700 shadow inline-flex items-center justify-center"
-                (click)="closeViewer()" aria-label="Close">
+        <button
+          type="button"
+          class="z-[9999] absolute -top-2 right-0 md:-top-6 md:-right-6 h-10 w-10 rounded-full bg-white/90 dark:bg-gray-900/90 border border-gray-200 dark:border-gray-700 shadow inline-flex items-center justify-center"
+          (click)="closeViewer()"
+          aria-label="Close"
+        >
           <i class="fas fa-times"></i>
         </button>
 
         <div class="relative bg-black/60 rounded-xl p-2 md:p-3">
-          <img [src]="viewerImages[viewerIndex].dataUrl" alt="image"
-               class="block mx-auto max-h-[80vh] w-auto max-w-full object-contain rounded-lg"/>
-          <button type="button" class="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/90 dark:bg-gray-900/90 border border-gray-200 dark:border-gray-700 shadow inline-flex items-center justify-center"
-                  (click)="prevImage()" aria-label="Previous"><i class="fas fa-chevron-left"></i></button>
-          <button type="button" class="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/90 dark:bg-gray-900/90 border border-gray-200 dark:border-gray-700 shadow inline-flex items-center justify-center"
-                  (click)="nextImage()" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
+          <img
+            [src]="viewerImages[viewerIndex].dataUrl"
+            alt="image"
+            class="block mx-auto max-h-[80vh] w-auto max-w-full object-contain rounded-lg"
+          />
+
+          <button
+            type="button"
+            class="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/90 dark:bg-gray-900/90 border border-gray-200 dark:border-gray-700 shadow inline-flex items-center justify-center"
+            (click)="prevImage()"
+            aria-label="Previous"
+          >
+            <i class="fas fa-chevron-left"></i>
+          </button>
+
+          <button
+            type="button"
+            class="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/90 dark:bg-gray-900/90 border border-gray-200 dark:border-gray-700 shadow inline-flex items-center justify-center"
+            (click)="nextImage()"
+            aria-label="Next"
+          >
+            <i class="fas fa-chevron-right"></i>
+          </button>
         </div>
 
         <div class="mt-2 text-center text-xs text-gray-200">

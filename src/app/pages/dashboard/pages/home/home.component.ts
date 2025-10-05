@@ -14,7 +14,13 @@ import { AlertService } from '../../../../core/services/alert.service';
 import { customer, location } from '../../../../core/const/suggestion';
 import { PhotoCloudService } from '../../../../core/services/photo-cloud.service';
 
-type ImageEntry = { id: string; dataUrl: string; mime: string; name: string };
+type ImageEntry = {
+  id: string;
+  dataUrl: string; // public URL from Supabase
+  mime: string;
+  name: string;
+};
+
 type PhotoItem = {
   id: string;
   client: string;
@@ -23,7 +29,13 @@ type PhotoItem = {
   createdAt: number;
   images: ImageEntry[];
 };
-type Draft = { client: string; location: string; note: string; files: File[] };
+
+type Draft = {
+  client: string;
+  location: string;
+  note: string;
+  files: File[];
+};
 
 @Component({
   selector: 'app-home',
@@ -43,13 +55,13 @@ export class HomeComponent {
   private alerts = inject(AlertService);
   private cloud = inject(PhotoCloudService);
 
-  actionLoading = false;
-  clearingAll = false;
+  // Loaders
+  loadingList = signal<boolean>(false); // loader while fetching from Supabase
+  actionLoading = false; // loader while adding (submit)
+  clearingAll = false; // loader while "Clear All"
+  deletingIds = signal<Set<string>>(new Set()); // per-item delete loader
 
-  // NEW: loader for cloud fetches
-  loadingItems = signal(false);
-
-  // UI prefs (grid only)
+  // Grid (kept locally as a UI preference)
   gridCols: number = this.readGridCols();
   get isGallery(): boolean {
     return this.gridCols >= 5;
@@ -64,26 +76,31 @@ export class HomeComponent {
   suggestions = { customers: customer, locations: location };
   draft = signal<Draft>({ client: '', location: '', note: '', files: [] });
 
+  // ---- INIT (cloud only) ----
   constructor() {
-    this.refreshFromCloud();
+    void this.refreshFromCloud();
   }
 
-  private async refreshFromCloud() {
-    this.loadingItems.set(true);
+  async refreshFromCloud() {
+    if (!this.cloud.isEnabled) {
+      await this.alerts.alert('Supabase is not configured.');
+      return;
+    }
+    this.loadingList.set(true);
     try {
       const remote = await this.cloud.listPhotos();
       this.items.set(remote);
-    } catch (e) {
+    } catch (e: any) {
       console.warn('Cloud load failed:', e);
       await this.alerts.alert(
-        this.t.instant('HOME.BACKUP.LOAD_ERR') || 'Load failed'
+        this.t.instant('HOME.PHOTOS.LOAD_FAILED') || 'Load failed'
       );
     } finally {
-      this.loadingItems.set(false);
+      this.loadingList.set(false);
     }
   }
 
-  // ---- images helpers (unchanged) ----
+  // ----- Image helpers -----
   private loadImage(fileOrBlob: Blob): Promise<HTMLImageElement> {
     return new Promise((resolve, reject) => {
       const fr = new FileReader();
@@ -122,7 +139,7 @@ export class HomeComponent {
     return await res.blob();
   }
 
-  // ---- dates / groups (unchanged) ----
+  // ----- Dates / groups -----
   private toISODateLocal(ts: number) {
     const d = new Date(ts);
     const pad = (n: number) => String(n).padStart(2, '0');
@@ -138,8 +155,10 @@ export class HomeComponent {
       arr.push(it);
       map.set(key, arr);
     }
-    for (const [k, arr] of map.entries())
+    for (const [k, arr] of map.entries()) {
       arr.sort((a, b) => b.createdAt - a.createdAt);
+      map.set(k, arr);
+    }
     const sortedKeys = Array.from(map.keys()).sort((a, b) =>
       b.localeCompare(a)
     );
@@ -152,7 +171,7 @@ export class HomeComponent {
     return this.groups().filter((g) => g.date === f);
   });
 
-  // ---- grid prefs only in localStorage ----
+  // ----- Grid prefs (UI only) -----
   private readGridCols(): number {
     try {
       const raw = localStorage.getItem('client-photos-grid-cols');
@@ -168,7 +187,7 @@ export class HomeComponent {
     localStorage.setItem('client-photos-grid-cols', String(n));
   }
 
-  // ---- filters / draft / dnd / viewer (unchanged) ----
+  // ----- Date filters -----
   toggleDateFilter(date: string) {
     this.selectedDateFilter.set(
       this.selectedDateFilter() === date ? null : date
@@ -181,6 +200,7 @@ export class HomeComponent {
     this.selectedDateFilter.set(val?.trim() ? val : null);
   }
 
+  // ----- Draft / modal -----
   openAddModal() {
     this.resetDraft();
     this.isAddOpen.set(true);
@@ -188,23 +208,27 @@ export class HomeComponent {
   closeAddModal() {
     this.isAddOpen.set(false);
   }
+
   onDraftChange<K extends keyof Draft>(field: K, value: Draft[K]) {
-    this.draft.set({ ...this.draft(), [field]: value });
+    const d = { ...this.draft(), [field]: value };
+    this.draft.set(d);
   }
   removeDraftFile(idx: number) {
     const d = { ...this.draft(), files: [...this.draft().files] };
     d.files.splice(idx, 1);
     this.draft.set(d);
   }
-  getFilePreview(file: File) {
+  getFilePreview(file: File): string {
     return URL.createObjectURL(file);
   }
   private resetDraft() {
     this.draft.set({ client: '', location: '', note: '', files: [] });
   }
 
+  // ----- Submit (cloud only) -----
   async submit() {
     const d = this.draft();
+
     if (!d.client.trim()) {
       await this.alerts.alert(
         this.t.instant('HOME.PHOTOS.VALIDATION_REQUIRED')
@@ -218,12 +242,14 @@ export class HomeComponent {
 
     this.actionLoading = true;
     try {
-      const imagesForMeta: { id: string; name: string; mime: string }[] = [];
+      // Prepare resized images (1280px) + blobs
+      const imagesMeta: { id: string; name: string; mime: string }[] = [];
       const blobsById: Record<string, Blob> = {};
+
       for (const f of d.files) {
         const dataUrl = await this.resizeToDataURL(f, 1280, 0.8);
         const id = crypto.randomUUID();
-        imagesForMeta.push({
+        imagesMeta.push({
           id,
           name: f.name || 'image.jpg',
           mime: 'image/jpeg',
@@ -232,26 +258,31 @@ export class HomeComponent {
       }
 
       const now = Date.now();
+      const newId = crypto.randomUUID();
+
+      // Push to Supabase
       await this.cloud.upsertPhoto(
         {
-          id: crypto.randomUUID(),
+          id: newId,
           client: d.client.trim(),
           location: d.location.trim(),
           note: d.note?.trim() ?? '',
           createdAt: now,
-          images: imagesForMeta,
+          images: imagesMeta,
         },
         blobsById
       );
 
-      // show loader while reloading
+      // Refresh from cloud so we get public URLs
       await this.refreshFromCloud();
 
+      // Close modal
       this.resetDraft();
       this.isAddOpen.set(false);
+
       await this.alerts.alert(this.t.instant('HOME.PHOTOS.SAVED'));
     } catch (e: any) {
-      console.error(e);
+      console.warn('Cloud save failed:', e);
       await this.alerts.alert(
         this.t.instant('HOME.PHOTOS.SAVE_FAILED', { message: e?.message || '' })
       );
@@ -260,42 +291,62 @@ export class HomeComponent {
     }
   }
 
+  // ----- Delete (cloud) with per-item loader -----
+  isDeleting(id: string) {
+    return this.deletingIds().has(id);
+  }
+
   async removeItem(id: string) {
     const ok = await this.alerts.confirm(
       this.t.instant('HOME.PHOTOS.CONFIRM_DELETE')
     );
     if (!ok) return;
-    const toRemove = this.items().find((x) => x.id === id);
-    if (!toRemove) return;
+
+    // Mark as deleting (show loader on the card button)
+    this.deletingIds.update((s) => new Set(s).add(id));
 
     try {
-      await this.cloud.deletePhoto(
-        toRemove.id,
-        toRemove.images.map((i) => ({ id: i.id, mime: i.mime }))
-      );
-      await this.refreshFromCloud();
-      if (this.viewerOpen) this.closeViewer();
+      const it = this.items().find((x) => x.id === id);
+      const imagesMeta = it
+        ? it.images.map((i) => ({ id: i.id, mime: i.mime }))
+        : [];
+      await this.cloud.deletePhoto(id, imagesMeta);
+
+      // Remove from UI
+      this.items.update((arr) => arr.filter((x) => x.id !== id));
+
+      // Close viewer if needed
+      if (
+        this.viewerOpen &&
+        this.viewerImages.length &&
+        this.items().every((x) => x.id !== id)
+      ) {
+        this.closeViewer();
+      }
     } catch (e) {
       console.warn('Cloud delete failed:', e);
+      await this.alerts.alert(this.t.instant('HOME.PHOTOS.DELETE_FAILED'));
+    } finally {
+      // Clear loader
+      this.deletingIds.update((s) => {
+        const ns = new Set(s);
+        ns.delete(id);
+        return ns;
+      });
     }
   }
 
+  // ----- Clear-all (cloud) with loader -----
   async clearAll() {
     const ok = await this.alerts.confirm(
       this.t.instant('HOME.BACKUP.CONFIRM_CLEAR_DB')
     );
     if (!ok) return;
+
     this.clearingAll = true;
     try {
       await this.cloud.clearAll();
-      this.items.set([]);
-      this.selectedDateFilter.set(null);
-      this.coverIndex = {};
-      this.viewerOpen = false;
-      this.viewerImages = [];
-      this.viewerIndex = 0;
-      this.viewerTitle = '';
-      this.resetDraft();
+      await this.refreshFromCloud();
       await this.alerts.alert(this.t.instant('HOME.BACKUP.CLEARED'));
     } catch (e: any) {
       await this.alerts.alert(
@@ -308,6 +359,7 @@ export class HomeComponent {
     }
   }
 
+  // ----- DnD -----
   onDragOver(ev: DragEvent) {
     ev.preventDefault();
     this.isDragging.set(true);
@@ -343,6 +395,7 @@ export class HomeComponent {
     this.mergeFilesIntoDraft(files);
   }
 
+  // ----- Suggestions -----
   openSuggest = signal<{ field: 'client' | 'location' | null }>({
     field: null,
   });
@@ -381,6 +434,7 @@ export class HomeComponent {
     this.openSuggest.set({ field: null });
   }
 
+  // ----- Viewer -----
   coverIndex: Record<string, number> = {};
   viewerOpen = false;
   viewerImages: ImageEntry[] = [];
