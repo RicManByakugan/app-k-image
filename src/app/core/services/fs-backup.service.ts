@@ -10,9 +10,9 @@ const DEFAULT_BASE = 'client-photos';
 export class FsBackupService {
   isSupported =
     typeof window !== 'undefined' &&
-    ('showDirectoryPicker' in window ||
-      ((navigator as any).storage && (navigator as any).storage.getDirectory) ||
-      true);
+    (('showDirectoryPicker' in window) ||
+      !!(navigator as any).storage?.getDirectory ||
+      'indexedDB' in window);
 
   private async getMode(): Promise<'fs-access' | 'opfs' | 'idb' | null> {
     return (await get(MODE_KEY)) ?? null;
@@ -29,26 +29,34 @@ export class FsBackupService {
 
   async pickFolder(): Promise<any | null> {
     if ('showDirectoryPicker' in window) {
-      const dir = await (window as any).showDirectoryPicker({
-        mode: 'readwrite',
-      });
-      await set(HANDLE_KEY, dir);
-      await this.setMode('fs-access');
-      await this.setBaseName((dir as any).name ?? DEFAULT_BASE);
       try {
-        await (navigator as any).storage?.persist?.();
-      } catch {}
-      return dir;
+        const dir = await (window as any).showDirectoryPicker({
+          mode: 'readwrite',
+        });
+        await set(HANDLE_KEY, dir);
+        await this.setMode('fs-access');
+        await this.setBaseName((dir as any).name ?? DEFAULT_BASE);
+        await this.ensurePersistentStorage();
+        return dir;
+      } catch (err) {
+        console.warn('pickFolder failed', err);
+        return null;
+      }
     }
     const opfs = (navigator as any).storage?.getDirectory;
     if (opfs) {
-      const root = await (navigator as any).storage.getDirectory();
-      const baseName = DEFAULT_BASE;
-      const baseDir = await root.getDirectoryHandle(baseName, { create: true });
-      await set(HANDLE_KEY, baseDir);
-      await this.setMode('opfs');
-      await this.setBaseName(baseName);
-      return baseDir;
+      try {
+        const root = await (navigator as any).storage.getDirectory();
+        const baseName = DEFAULT_BASE;
+        const baseDir = await root.getDirectoryHandle(baseName, { create: true });
+        await set(HANDLE_KEY, baseDir);
+        await this.setMode('opfs');
+        await this.setBaseName(baseName);
+        return baseDir;
+      } catch (err) {
+        console.warn('pickFolder (opfs) failed', err);
+        return null;
+      }
     }
     await this.setMode('idb');
     await this.setBaseName(DEFAULT_BASE);
@@ -72,24 +80,12 @@ export class FsBackupService {
     if (mode === 'fs-access') {
       const dir = await this.getHandle();
       if (!dir) return null;
-      try {
-        const q = await (dir as any).queryPermission?.({ mode: 'readwrite' });
-        if (q !== 'granted') {
-          const r = await (dir as any).requestPermission?.({
-            mode: 'readwrite',
-          });
-          if (r !== 'granted') return null;
-        }
-      } catch {}
-      try {
-        const it = (dir as any).entries?.();
-        if (it && it[Symbol.asyncIterator]) {
-          for await (const _ of it) break;
-        }
+      const ok = await this.ensureReadWritePermission(dir);
+      if (!ok) return null;
+      if (await this.canIterateDirectory(dir)) {
         return dir;
-      } catch {
-        return null;
       }
+      return null;
     }
 
     if (mode === 'opfs') {
@@ -97,12 +93,11 @@ export class FsBackupService {
         const root = await (navigator as any).storage.getDirectory();
         const baseName = await this.getBaseName();
         const dir = await root.getDirectoryHandle(baseName, { create: true });
-        const it = (dir as any).entries?.();
-        if (it && it[Symbol.asyncIterator]) {
-          for await (const _ of it) break;
+        if (await this.canIterateDirectory(dir)) {
+          await set(HANDLE_KEY, dir);
+          return dir;
         }
-        await set(HANDLE_KEY, dir);
-        return dir;
+        return null;
       } catch {
         return null;
       }
@@ -285,5 +280,53 @@ export class FsBackupService {
     if (mime.includes('webp')) return 'webp';
     if (mime.includes('gif')) return 'gif';
     return null;
+  }
+
+  async getRememberedBaseName(): Promise<string | null> {
+    const mode = await this.getMode();
+    if (!mode) return null;
+    try {
+      return await this.getBaseName();
+    } catch {
+      return null;
+    }
+  }
+
+  private async ensurePersistentStorage() {
+    try {
+      const storage = (navigator as any).storage;
+      if (!storage?.persist) return;
+      const persisted = await storage.persisted?.();
+      if (!persisted) {
+        await storage.persist();
+      }
+    } catch {}
+  }
+
+  private async ensureReadWritePermission(handle: any): Promise<boolean> {
+    try {
+      const opts = { mode: 'readwrite' };
+      const query = await handle?.queryPermission?.(opts);
+      if (query === 'granted') return true;
+      if (query === 'denied') return false;
+      const requested = await handle?.requestPermission?.(opts);
+      return requested === 'granted';
+    } catch {
+      return false;
+    }
+  }
+
+  private async canIterateDirectory(handle: any): Promise<boolean> {
+    try {
+      const iterator = handle?.entries?.();
+      if (iterator && iterator[Symbol.asyncIterator]) {
+        for await (const _ of iterator) {
+          break;
+        }
+      }
+      return true;
+    } catch {
+      return false;
+    }
   }
 }

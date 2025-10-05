@@ -1,7 +1,5 @@
 import {
   Component,
-  ElementRef,
-  ViewChild,
   inject,
   signal,
   effect,
@@ -80,40 +78,42 @@ export class HomeComponent {
   suggestions = { customers: customer, locations: location };
   draft = signal<Draft>({ client: '', location: '', note: '', files: [] });
 
-  @ViewChild('importInput', { static: false })
-  importInput?: ElementRef<HTMLInputElement>;
-
   constructor() {
-    void this.ensureBackup().then(async (ok) => {
-      if (!ok) {
-        this.items.set([]);
-        return;
-      }
-      const local = this.readAll();
-      if (local.length > 0) {
-        this.items.set(local);
-      } else {
-        // <- RESTAURE DEPUIS LA BASE
-        await this.restoreFromDatabase();
-      }
-    });
+    const local = this.readAll();
+    if (local.length) {
+      this.items.set(local);
+    }
     effect(() => this.writeAll(this.items()));
-
-    // juste pour afficher le nom si déjà configuré
-    void this.fs.getHandle()?.then((h) => {
-      if (h) {
-        this.backupFolderName = (h as any).name ?? '…';
-        localStorage.setItem('backup-configured', '1');
-      }
-    });
+    void this.initialize();
   }
 
-  private async restoreFromDatabase() {
+  private async initialize() {
+    if (!this.fs.isSupported) {
+      this.backupReady.set(false);
+      this.backupFolderName = null;
+      localStorage.removeItem('backup-configured');
+      return;
+    }
+
+    const remembered = await this.fs.getRememberedBaseName();
+    if (remembered) {
+      this.backupFolderName = remembered;
+    }
+
+    const ready = await this.ensureBackup();
+    if (!ready) {
+      return;
+    }
+
+    await this.restoreFromDatabase();
+  }
+
+  private async restoreFromDatabase(): Promise<boolean> {
     try {
       const okBase = await this.ensureBackup();
-      if (!okBase) return;
+      if (!okBase) return false;
 
-      const packs = await this.fs.getAllItems(); // [{meta, blobs}]
+      const packs = await this.fs.getAllItems();
       const hydrated: PhotoItem[] = [];
 
       for (const { meta, blobs } of packs) {
@@ -123,7 +123,7 @@ export class HomeComponent {
         for (const im of meta.images) {
           const blob = blobs[im.id];
           if (!blob) continue;
-          const thumbDataUrl = await this.resizeToDataURL(blob, 320, 0.7); // <- génère miniature
+          const thumbDataUrl = await this.resizeToDataURL(blob, 320, 0.7);
           images.push({
             id: im.id,
             dataUrl: thumbDataUrl,
@@ -142,17 +142,15 @@ export class HomeComponent {
         });
       }
 
-      // tri décroissant par date pour cohérence
       hydrated.sort((a, b) => b.createdAt - a.createdAt);
 
       this.items.set(hydrated);
-      // <- l'effect writeAll() va persister en localStorage
+      return true;
     } catch (e) {
       console.warn('restoreFromDatabase failed:', e);
-      this.items.set([]); // état safe
+      return false;
     }
   }
-
   private loadImage(fileOrBlob: Blob): Promise<HTMLImageElement> {
     return new Promise((resolve, reject) => {
       const fr = new FileReader();
@@ -201,11 +199,6 @@ export class HomeComponent {
     return await new Promise<Blob>((resolve) => {
       canvas.toBlob((b) => resolve(b!), 'image/jpeg', quality);
     });
-  }
-
-  // i18n
-  private i18n(key: string, params?: Record<string, any>) {
-    return this.t.instant(key, params);
   }
 
   // dates
@@ -265,18 +258,20 @@ export class HomeComponent {
       this.backupReady.set(false);
       this.backupFolderName = null;
       localStorage.removeItem('backup-configured');
-      this.items.set([]);
       return false;
     }
+
     const dir = await this.fs.verifyHandle();
     if (!dir) {
       this.backupReady.set(false);
-      this.backupFolderName = null;
+      const remembered = await this.fs.getRememberedBaseName();
+      this.backupFolderName = remembered ?? this.backupFolderName;
       localStorage.removeItem('backup-configured');
-      this.items.set([]);
       return false;
     }
-    this.backupFolderName = (dir as any).name ?? '…';
+
+    const resolvedName = (dir as any).name ?? (await this.fs.getRememberedBaseName()) ?? null;
+    this.backupFolderName = resolvedName;
     this.backupReady.set(true);
     localStorage.setItem('backup-configured', '1');
     return true;
@@ -416,12 +411,7 @@ export class HomeComponent {
 
       await this.alerts.alert(this.t.instant('HOME.PHOTOS.SAVED'));
     } catch (e: any) {
-      // Erreur d’écriture (dossier supprimé, permission perdue, etc.)
-      this.backupReady.set(false);
-      this.backupFolderName = null;
-      localStorage.removeItem('backup-configured');
-
-      // Message générique (ou remplace par 'HOME.BACKUP.MISSING' si tu as la clé)
+      await this.ensureBackup();
       await this.alerts.alert(
         this.t.instant('HOME.BACKUP.SAVE_FAILED', { message: e?.message || '' })
       );
@@ -552,63 +542,6 @@ export class HomeComponent {
   }
   onDateInputChange(val: string) {
     this.selectedDateFilter.set(val?.trim() ? val : null);
-  }
-
-  // import/export
-  exportAll() {
-    const payload = {
-      kind: 'client-photos.v1',
-      exportedAt: Date.now(),
-      items: this.items(),
-    };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], {
-      type: 'application/json',
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `client-photos-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  openImportDialog() {
-    this.importInput?.nativeElement.click();
-  }
-
-  async onImportChosen(ev: Event) {
-    const input = ev.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file) return;
-
-    const okBase = await this.ensureBackup();
-    if (!okBase) {
-      await this.alerts.alert(this.i18n('HOME.BACKUP.REQUIRED'));
-      if (this.importInput?.nativeElement)
-        this.importInput.nativeElement.value = '';
-      return;
-    }
-
-    try {
-      const text = await file.text();
-      const json = JSON.parse(text);
-      if (
-        !json ||
-        json.kind !== 'client-photos.v1' ||
-        !Array.isArray(json.items)
-      ) {
-        throw new Error('Unsupported file');
-      }
-      this.items.set(json.items as PhotoItem[]);
-      await this.alerts.alert(this.i18n('HOME.PHOTOS.IMPORTED'));
-    } catch (e: any) {
-      await this.alerts.alert(
-        this.i18n('HOME.PHOTOS.IMPORT_FAILED', { message: e?.message || '' })
-      );
-    } finally {
-      if (this.importInput?.nativeElement)
-        this.importInput.nativeElement.value = '';
-    }
   }
 
   // utils images
