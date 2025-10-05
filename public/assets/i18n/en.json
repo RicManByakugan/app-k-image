@@ -36,7 +36,7 @@
     "PHOTOS": {
       "TOTAL": "total",
       "DND_HINT": "Drag and drop your images here",
-      "TITLE": "Client Photos",
+      "TITLE": "Photos",
       "DATE": "Date",
       "ADD": "Add",
       "ADD_TITLE": "Add photos for a client",
